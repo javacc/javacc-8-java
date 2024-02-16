@@ -178,7 +178,9 @@ class JavaCharStream {
   /**
    * Gets starting character for token.
    *
-   * @return starting character for token. */
+   * @return starting character for token.
+   * @throws java.io.IOException when IO error occurs or EOF is encountered
+   */
   ${PREFIX}public char BeginToken() throws java.io.IOException {
     if (inBuf > 0) {
       --inBuf;
@@ -249,7 +251,12 @@ class JavaCharStream {
   }
 #fi
 
-  /** Read a character. */
+  /**
+   * Read a character.
+   *
+   * @return the character read
+   * @throws java.io.IOException when IO error occurs or EOF is encountered
+   */
   ${PREFIX}public char readChar() throws java.io.IOException {
     if (inBuf > 0) {
       --inBuf;
@@ -350,6 +357,7 @@ class JavaCharStream {
   /**
    * Gets end column.
    *
+   * @return end column
    * @deprecated see {@link #getEndColumn}
    */
 #if GENERATE_ANNOTATIONS
@@ -429,7 +437,11 @@ class JavaCharStream {
 #fi
   }
 
-  /** Retreat. */
+  /**
+   * Retreat.
+   *
+   * @param amount number of characters to back up
+   */
   ${PREFIX}public void backup(int amount) {
 
     inBuf += amount;
@@ -480,7 +492,14 @@ class JavaCharStream {
     this(dstream, 1, 1, 4096);
   }
 
-  /** Reinitialise. */
+  /**
+   * Reinitialise.
+   *
+   * @param dstream the underlying data source.
+   * @param startline line number of the first character of the stream, mostly for error messages.
+   * @param startcolumn column number of the first character of the stream.
+   * @param buffersize buffer size in bytes
+   */
   public void ReInit(Provider dstream,
                  int startline, int startcolumn, int buffersize) {
     inputStream = dstream;
@@ -505,12 +524,20 @@ class JavaCharStream {
     nextCharInd = bufpos = -1;
   }
 
-  /** Reinitialise. */
+  /** Reinitialise.
+   *
+   * @param dstream the underlying data source.
+   * @param startline line number of the first character of the stream, mostly for error messages.
+   * @param startcolumn column number of the first character of the stream.
+   */
   public void ReInit(Provider dstream, int startline, int startcolumn) {
     ReInit(dstream, startline, startcolumn, 4096);
   }
 
-  /** Reinitialise. */
+  /** Reinitialise.
+   *
+   * @param dstream the underlying data source.
+   */
   public void ReInit(Provider dstream) {
     ReInit(dstream, 1, 1, 4096);
   }

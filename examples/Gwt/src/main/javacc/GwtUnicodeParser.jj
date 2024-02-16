@@ -56,7 +56,12 @@ import java.io.PrintStream;
 /** Simple brace matcher. */
 public class GwtUnicodeParser {
 
-  /** Main entry point. */
+  /** Main entry point.
+   *
+   * @param args command line args
+   * @throws IOException if IO error occurs
+   * @throws ParseException if parsing fails
+   */
   public static void main(String[] args) throws ParseException, IOException {
     PrintStream output = System.out;
     PrintStream error = System.err;
@@ -89,7 +94,11 @@ public class GwtUnicodeParser {
 
 PARSER_END(GwtUnicodeParser)
 
-/** Root production. */
+
+ /** Root production.
+  *
+  * @throws ParseException if parsing fails
+  */
 void Input() :
 {}
 {

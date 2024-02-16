@@ -35,6 +35,11 @@ public class ParseException extends Exception {
    * in the generated parser.  Calling this constructor generates
    * a new object of this type with the fields "currentToken",
    * "expectedTokenSequences", and "tokenImage" set.
+   *
+   * @param currentTokenVal current token value
+   * @param expectedTokenSequencesVal expected token sequences
+   * @param tokenImageVal token image value
+   * @param lexicalStateName lexical state name
    */
   public ParseException(Token currentTokenVal,
                         int[][] expectedTokenSequencesVal,
@@ -59,7 +64,11 @@ public class ParseException extends Exception {
     super();
   }
 
-  /** Constructor with message. */
+  /**
+   * Constructor with message.
+   *
+   * @param message error message
+   */
   public ParseException(String message) {
     super(message);
   }
@@ -91,6 +100,11 @@ public class ParseException extends Exception {
    * due to a parse error, and you do not catch it (it gets thrown
    * from the parser) the correct error message
    * gets displayed.
+   *
+   * @param currentTokenVal current token value
+   * @param expectedTokenSequencesVal expected token sequences
+   * @param tokenImage token image
+   * @param lexicalStateName lexical state name
    */
   private static String initialise(Token currentToken,
                            int[][] expectedTokenSequences,
@@ -156,6 +170,8 @@ public class ParseException extends Exception {
    * Used to convert raw characters to their escaped version
    * when these raw version cannot be used as part of an ASCII
    * string literal.
+   *
+   * @param str string to be escaped
    */
   static String add_escapes(String str) {
     StringBuffer retval = new StringBuffer();

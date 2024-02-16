@@ -21,11 +21,18 @@ ${decls}
 
 /* Declarations from the TOKEN_MGR_DECLS section */
 
-  /** Constructor with parser. */
+  /** Constructor with parser.
+   *
+   * @param parserArgs parser
+   * @param stream input stream
+   */
   public ${parserName}TokenManager(${parserName} parserArg, ${charStreamName} stream) {
     parser = parserArg;
 #else
-  /** Constructor. */
+  /** Constructor.
+   *
+   * @param stream input stream
+   */
   public ${parserName}TokenManager(${charStreamName} stream) {
 #fi
 
@@ -47,23 +54,36 @@ ${decls}
   }
 
 #if TOKEN_MANAGER_USES_PARSER && !STATIC
-  /** Constructor with parser. */
+  /** Constructor with parser.
+   *
+   * @param parserArg parser
+   * @param stream input stream
+   * @param lexState lexical state
+   */
   public ${parserName}TokenManager(${parserName} parserArg, ${charStreamName} stream, int lexState) {
     ReInit(parserArg, stream);
   }
 #else
-  /** Constructor. */
+  /** Constructor.
+   *
+   * @param stream input stream
+   * @param lexState lexical state
+   */
   public ${parserName}TokenManager(${charStreamName} stream, int lexState) {
     ReInit(stream);
     SwitchTo(lexState);
   }
 #fi
 
-  /** Reinitialise parser. */
-  
+  /** Reinitialise parser.
+   *
+   * @param stream input stream
 #if TOKEN_MANAGER_USES_PARSER && !STATIC
+   * @param parserArg parser
+   */
   public void ReInit(${parserName} parserArg, ${charStreamName} stream) {
 #else
+   */
   public ${STATIC?static :}void ReInit(${charStreamName} stream) {
 #fi
 #if TOKEN_MANAGER_USES_PARSER && !STATIC
@@ -75,10 +95,16 @@ ${decls}
     input_stream = stream;
   }
 
-  /** Reinitialise parser. */
+  /** Reinitialise parser.
+   *
+   * @param stream input stream
+   * @param lexState lexical state
 #if TOKEN_MANAGER_USES_PARSER && !STATIC
+   * @param parserArg parser
+   */
   public void ReInit( ${parserName} parserArg, ${charStreamName} stream, int lexState) {
 #else
+   */
   public ${STATIC?static :}void ReInit(${charStreamName} stream, int lexState) {
 #fi
 #if TOKEN_MANAGER_USES_PARSER && !STATIC
@@ -89,7 +115,11 @@ ${decls}
     SwitchTo(lexState);
   }
 
-  /** Switch to specified lex state. */
+  /**
+   * Switch to specified lex state.
+   *
+   * @param lexState lexical state
+   */
   public ${STATIC?static :}void SwitchTo(int lexState) {
     curLexState = lexState;
   }
@@ -370,7 +400,10 @@ protected ${STATIC?static :} Token jjFillToken() {
   return t;
 }
 
-/** Get the next Token. */
+ /** Get the next Token.
+  *
+  * @return next token
+  */
 public ${STATIC?static :} Token getNextToken() {
   Token specialToken = null;
   Token matchedToken;

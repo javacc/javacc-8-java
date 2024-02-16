@@ -303,7 +303,10 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
           }
           codeGenerator.println("  }");
           codeGenerator.println("");
-          codeGenerator.println("  /** Reinitialise. */");
+          codeGenerator.println("  /** Reinitialise.");
+          codeGenerator.println("   *");
+          codeGenerator.println("   * @param stream input stream");
+          codeGenerator.println("   */");
           codeGenerator.println("  public " + JavaUtil.getStatic() + "void ReInit(CharStream stream) {");
 
           if (Options.isTokenManagerRequiresParserAccess()) {
@@ -345,12 +348,19 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
         } else {
 
           if (!isJavaModernMode) {
-            codeGenerator.println("  /** Constructor with InputStream. */");
+            codeGenerator.println("  /** Constructor with InputStream.");
+            codeGenerator.println("   *");
+            codeGenerator.println("   * @param stream input stream");
+            codeGenerator.println("   */");
             codeGenerator.println("  public " + context.globals().cu_name + "(java.io.InputStream stream) {");
-            codeGenerator.println("   this(stream, null);");
+            codeGenerator.println("    this(stream, null);");
             codeGenerator.println("  }");
             codeGenerator.println();
-            codeGenerator.println("  /** Constructor with InputStream and supplied encoding. */");
+            codeGenerator.println("  /** Constructor with InputStream and supplied encoding.");
+            codeGenerator.println("   *");
+            codeGenerator.println("   * @param stream input stream");
+            codeGenerator.println("   * @param encoding character encoding");
+            codeGenerator.println("   */");
             codeGenerator
             .println("  public " + context.globals().cu_name + "(java.io.InputStream stream, String encoding) {");
             if (Options.getStatic()) {
@@ -418,14 +428,22 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
             codeGenerator.println("  }");
             codeGenerator.println("");
 
-            codeGenerator.println("  /** Reinitialise. */");
+            codeGenerator.println("  /** Reinitialise.");
+            codeGenerator.println("   *");
+            codeGenerator.println("   * @param stream input stream");
+            codeGenerator.println("   */");
             codeGenerator
             .println("  public " + JavaUtil.getStatic() + "void ReInit(java.io.InputStream stream) {");
             codeGenerator.println("   ReInit(stream, null);");
             codeGenerator.println("  }");
 
             codeGenerator.println();
-            codeGenerator.println("  /** Reinitialise. */");
+
+            codeGenerator.println("  /** Reinitialise.");
+            codeGenerator.println("   *");
+            codeGenerator.println("   * @param stream input stream");
+            codeGenerator.println("   * @param encoding encoding");
+            codeGenerator.println("   */");
             codeGenerator.println(
                 "  public " + JavaUtil.getStatic() + "void ReInit(java.io.InputStream stream, String encoding) {");
 
@@ -477,7 +495,10 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
           final String stringReaderClass = isJavaModernMode ? "StringProvider" : "java.io.StringReader";
 
 
-          codeGenerator.println("  /** Constructor. */");
+          codeGenerator.println("  /** Constructor.");
+          codeGenerator.println("   *");
+          codeGenerator.println("   * @param stream provider of the input stream");
+          codeGenerator.println("   */");
           codeGenerator.println("  public " + context.globals().cu_name + "(" + readerInterfaceName + " stream) {");
           if (Options.getStatic()) {
             codeGenerator.println("  if (jj_initialized_once) {");
@@ -530,7 +551,13 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
           // only to prevent regressions)
           if (isJavaModernMode) {
             codeGenerator.println("");
-            codeGenerator.println("  /** Constructor. */");
+            codeGenerator.println("  /** Constructor. ");
+            codeGenerator.println("   *");
+            codeGenerator.println("   * @param dsl string to be parsed");
+            codeGenerator.println("   * @throws ParseException if parsing fails");
+            codeGenerator.println("   * @throws " + JavaTemplates.getTokenMgrErrorClass()
+                + " if tokenization fails");
+            codeGenerator.println("   */ ");
             codeGenerator.println("  public " + context.globals().cu_name + "(String dsl) throws ParseException, "
                 + JavaTemplates.getTokenMgrErrorClass() + " {");
             codeGenerator.println("    this(new " + stringReaderClass + "(dsl));");
@@ -544,7 +571,10 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
           }
 
           codeGenerator.println();
-          codeGenerator.println("  /** Reinitialise. */");
+          codeGenerator.println("  /** Reinitialise.");
+          codeGenerator.println("   *");
+          codeGenerator.println("   * @param stream input stream");
+          codeGenerator.println("   */ ");
           codeGenerator
           .println("  public " + JavaUtil.getStatic() + "void ReInit(" + readerInterfaceName + " stream) {");
           if (Options.getJavaUnicodeEscape()) {
@@ -609,13 +639,19 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
         }
       }
       codeGenerator.println("");
-      if (Options.getUserTokenManager()) {
-        codeGenerator.println("  /** Constructor with user supplied Token Manager. */");
-        codeGenerator.println("  public " + context.globals().cu_name + "(TokenManager tm) {");
-      } else {
-        codeGenerator.println("  /** Constructor with generated Token Manager. */");
-        codeGenerator.println("  public " + context.globals().cu_name + "(" + context.globals().cu_name + "TokenManager tm) {");
+      String managerType = "user supplied";
+      String managerClassName = "TokenManager";
+      if (!Options.getUserTokenManager()) {
+        managerType = "generated";
+        managerClassName = context.globals().cu_name + managerClassName;
       }
+      codeGenerator.println("  /** Constructor with " + managerType + " Token Manager.");
+      codeGenerator.println("   *");
+      codeGenerator.println("   * @param tm token manager");
+      codeGenerator.println("   */");
+      codeGenerator.println("  public " + context.globals().cu_name
+              + "(" + managerClassName + " tm) {");
+
       if (Options.getStatic()) {
         codeGenerator.println("  if (jj_initialized_once) {");
         codeGenerator.println("    System.out.println(\"ERROR: Second call to constructor of static parser. \");");
@@ -652,11 +688,13 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
       }
       codeGenerator.println("  }");
       codeGenerator.println("");
+      codeGenerator.println("  /** Reinitialise.");
+      codeGenerator.println("   *");
+      codeGenerator.println("   * @param tm token manager");
+      codeGenerator.println("   */");
       if (Options.getUserTokenManager()) {
-        codeGenerator.println("  /** Reinitialise. */");
         codeGenerator.println("  public void ReInit(TokenManager tm) {");
       } else {
-        codeGenerator.println("  /** Reinitialise. */");
         codeGenerator.println("  public void ReInit(" + context.globals().cu_name + "TokenManager tm) {");
       }
       codeGenerator.println("  token_source = tm;");
@@ -792,7 +830,10 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
         codeGenerator.println("");
       }
       codeGenerator.println("");
-      codeGenerator.println("/** Get the next Token. */");
+      codeGenerator.println("  /** Get the next Token.");
+      codeGenerator.println("   *");
+      codeGenerator.println("   * @return the next token");
+      codeGenerator.println("   */");
       codeGenerator.println("  public " + JavaUtil.getStatic() + "final Token getNextToken() {");
       if (Options.getCacheTokens()) {
         codeGenerator.println("  if ((token = jj_nt).next != null) {");
@@ -817,7 +858,11 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
       codeGenerator.println("  return token;");
       codeGenerator.println("  }");
       codeGenerator.println("");
-      codeGenerator.println("/** Get the specific Token. */");
+      codeGenerator.println("  /** Get the specific Token.");
+      codeGenerator.println("   *");
+      codeGenerator.println("   * @param index token index");
+      codeGenerator.println("   * @return token at given index");
+      codeGenerator.println("   */");
       codeGenerator.println("  public " + JavaUtil.getStatic() + "final Token getToken(int index) {");
       if (context.globals().lookaheadNeeded) {
         codeGenerator.println("    Token t = jj_lookingAhead ? jj_scanpos : token;");
@@ -904,7 +949,10 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
           codeGenerator.println("  }");
         }
         codeGenerator.println("");
-        codeGenerator.println("  /** Generate ParseException. */");
+        codeGenerator.println("  /** Generate ParseException.");
+        codeGenerator.println("   *");
+        codeGenerator.println("   * @return the parse exception");
+        codeGenerator.println("   */");
         codeGenerator.println("  public " + JavaUtil.getStatic() + "ParseException generateParseException() {");
         codeGenerator.println("  jj_expentries.clear();");
         codeGenerator.println("  " + JavaUtil.getBooleanType() + "[] la1tokens = new " + JavaUtil.getBooleanType() + "["
@@ -982,7 +1030,10 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
       codeGenerator
       .println("  private " + JavaUtil.getStatic() + JavaUtil.getBooleanType() + " trace_enabled;");
       codeGenerator.println("");
-      codeGenerator.println("/** Trace enabled. */");
+      codeGenerator.println("  /** Trace enabled.");
+      codeGenerator.println("   *");
+      codeGenerator.println("   * @return whether trace is enabled");
+      codeGenerator.println("   */");
       codeGenerator.println("  public " + JavaUtil.getStatic() + "final boolean trace_enabled() {");
       codeGenerator.println("  return trace_enabled;");
       codeGenerator.println("  }");

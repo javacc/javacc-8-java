@@ -62,6 +62,8 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class Token {
    * interpreter. This attribute value is often different from the image.
    * Any subclass of Token that actually wants to return a non-null value can
    * override this method as appropriate.
+   *
+   * @return semantic value, null by default
    */
   public Object getValue() {
     return null;
@@ -74,6 +76,8 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class Token {
 
   /**
    * Constructs a new token for the specified Image.
+   *
+   * @param kind token kind
    */
   public Token(int kind) {
     this(kind, null);
@@ -81,6 +85,9 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class Token {
 
   /**
    * Constructs a new token for the specified Image and Kind.
+   *
+   * @param kind token kind
+   * @param image string representation of this token
    */
   public Token(int kind, String image) {
     this.kind = kind;
@@ -89,6 +96,8 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class Token {
 
   /**
    * Returns the image.
+   *
+   * @return string representation of this token
    */
   @Override
   public String toString() {
@@ -106,6 +115,10 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class Token {
    * </code>
    * to the following switch statement. Then you can cast matchedToken
    * variable to the appropriate type and use sit in your lexical actions.
+   *
+   * @param ofKind token kind
+   * @param image string representation of this token
+   * @return new token
    */
   public static Token newToken(int ofKind, String image) {
     switch (ofKind) {
