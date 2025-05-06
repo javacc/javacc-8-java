@@ -1,0 +1,58 @@
+name: Deploy SNAPSHOT to Sonatype
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.java'
+      - '**/pom.xml'
+      - '.github/workflows/deploy-snapshot.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout javacc-8
+        uses: actions/checkout@v4
+        with:
+          repository: javacc/javacc-8
+          path: javacc-8
+
+      - name: Checkout javacc-8-core
+        uses: actions/checkout@v4
+        with:
+          repository: javacc/javacc-8-core
+          path: javacc-8-core
+
+      - name: Checkout javacc-8-java
+        uses: actions/checkout@v4
+        with:
+          repository: javacc/javacc-8-java
+          path: javacc-8-java
+
+      - name: Set up Java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Build and install javacc-8
+        working-directory: javacc-8
+        run: |
+          sed -i 's|<javacc.java.version>[^<]*</javacc.java.version>|<javacc.java.version>8.1.0-SNAPSHOT</javacc.java.version>|' pom.xml
+          mvn clean install -P!run-its
+
+      - name: Build and install javacc-8-core
+        working-directory: javacc-8-core
+        run: mvn clean install -P!run-its
+
+      - name: Deploy javacc-8-java to Sonatype OSSRH
+        working-directory: javacc-8-java
+        run: mvn clean deploy -P!run-its -DskipTests
