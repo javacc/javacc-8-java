@@ -88,8 +88,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <configuration>
               <mainClass>GwtSimpleParser</mainClass>
               <arguments>
-                <argument>${project.basedir}/simple/out</argument>
-                <argument>${project.basedir}/simple/err</argument>
+                <argument>${project.basedir}/simple/compiler.out</argument>
+                <argument>${project.basedir}/simple/compiler.err</argument>
               </arguments>
             </configuration>
           </execution>
@@ -102,8 +102,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <configuration>
               <mainClass>GwtUnicodeParser</mainClass>
               <arguments>
-                <argument>${project.basedir}/unicode/out</argument>
-                <argument>${project.basedir}/unicode/err</argument>
+                <argument>${project.basedir}/unicode/compiler.out</argument>
+                <argument>${project.basedir}/unicode/compiler.err</argument>
               </arguments>
             </configuration>
           </execution>
@@ -122,18 +122,18 @@ THE POSSIBILITY OF SUCH DAMAGE.
             </goals>
             <configuration>
               <target>
-                <available file="${project.basedir}/simple/out" property="isActualAvailable" />
+                <available file="${project.basedir}/simple/compiler.out" property="isActualAvailable" />
                 <fail unless="isActualAvailable"
-                  message="${project.basedir}/simple/out does not exist!" />
-                <available file="${project.basedir}/simple/ref" property="isExpectedAvailable" />
+                  message="${project.basedir}/simple/compiler.out does not exist!" />
+                <available file="${project.basedir}/simple/compiler.ref" property="isExpectedAvailable" />
                 <fail unless="isExpectedAvailable"
-                  message="${project.basedir}/simple/ref does not exist!" />
+                  message="${project.basedir}/simple/compiler.ref does not exist!" />
                 <condition property="files.match">
-                  <filesmatch file1="${project.basedir}/simple/out"
-                    file2="${project.basedir}/simple/ref" textfile="true" />
+                  <filesmatch file1="${project.basedir}/simple/compiler.out"
+                    file2="${project.basedir}/simple/compiler.ref" textfile="true" />
                 </condition>
                 <fail unless="files.match"
-                  message="${project.basedir}/simple/out does not match ${project.basedir}/simple/ref!" />
+                  message="${project.basedir}/simple/compiler.out does not match ${project.basedir}/simple/compiler.ref!" />
               </target>
             </configuration>
           </execution>
@@ -145,18 +145,18 @@ THE POSSIBILITY OF SUCH DAMAGE.
             </goals>
             <configuration>
               <target>
-                <available file="${project.basedir}/unicode/out" property="isActualAvailable" />
+                <available file="${project.basedir}/unicode/compiler.out" property="isActualAvailable" />
                 <fail unless="isActualAvailable"
-                  message="${project.basedir}/unicode/out does not exist!" />
-                <available file="${project.basedir}/unicode/ref" property="isExpectedAvailable" />
+                  message="${project.basedir}/unicode/compiler.out does not exist!" />
+                <available file="${project.basedir}/unicode/compiler.ref" property="isExpectedAvailable" />
                 <fail unless="isExpectedAvailable"
-                  message="${project.basedir}/unicode/ref does not exist!" />
+                  message="${project.basedir}/unicode/compiler.ref does not exist!" />
                 <condition property="files.match">
-                  <filesmatch file1="${project.basedir}/unicode/out"
-                    file2="${project.basedir}/unicode/ref" textfile="true" />
+                  <filesmatch file1="${project.basedir}/unicode/compiler.out"
+                    file2="${project.basedir}/unicode/compiler.ref" textfile="true" />
                 </condition>
                 <fail unless="files.match"
-                  message="${project.basedir}/unicode/out does not match ${project.basedir}/unicode/ref!" />
+                  message="${project.basedir}/unicode/compiler.out does not match ${project.basedir}/unicode/compiler.ref!" />
               </target>
             </configuration>
           </execution>

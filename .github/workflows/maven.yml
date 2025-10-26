@@ -40,6 +40,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
@@ -62,9 +63,7 @@ jobs:
     - name: clone javacc-8-java
       uses: actions/checkout@v4
       with:
-        repository: javacc/javacc-8-java.git
         path: javacc-8-java
-        ref: release
 
     - name: Set up JDK 11
       uses: actions/setup-java@v4
@@ -72,13 +71,6 @@ jobs:
         distribution: 'temurin'
         java-version: '11'
         cache: 'maven'
-
-    - name: Cache Maven packages
-      uses: actions/cache@v4
-      with:
-         path: ~/.m2
-         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-         restore-keys: ${{ runner.os }}-m2
 
     # -B: batch mode; -e: produce execution error messages;
     # -X: debug mode; -N: non-recursive (don't build submodules)
@@ -88,6 +80,21 @@ jobs:
 
     - name: Run install on javacc-8-core
       run: mvn install -B --show-version --file javacc-8-core/pom.xml
-
-    - name: Run install on javacc-8-java
+    - name: Run install on javacc-8-java (posix)
+      if: ${{ matrix.os != 'windows-latest' }}
+      run: USERPROFILE=$HOME mvn install -B --show-version --file javacc-8-java/pom.xml
+    - name: Run install on javacc-8-java (windows)
+      env:
+        MAVEN_OPTS: -Dfile.encoding=utf-8
+      if: ${{ matrix.os == 'windows-latest' }}
       run: mvn install -B --show-version --file javacc-8-java/pom.xml
+
+    - name: Upload output files for review
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: outputs-${{ matrix.os }}
+        path: |
+          **/*.out
+          **/*.err
+          **/build.log

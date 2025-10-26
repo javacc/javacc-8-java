@@ -152,6 +152,18 @@ THE POSSIBILITY OF SUCH DAMAGE.
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
+            <execution>
+                <id>crlf-test</id>
+                <phase>compile</phase>
+                <configuration>
+                    <target>
+                        <fixcrlf srcdir="files" includes="**/*.in" eol="lf" fixlast="false"/>
+                    </target>
+                </configuration>
+                <goals>
+                    <goal>run</goal>
+                </goals>
+            </execution>
           <execution>
             <id>check-res-test-1</id>
             <phase>test</phase>

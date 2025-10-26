@@ -36,7 +36,7 @@ options
   DEBUG_PARSER = true;
 //  DEBUG_TOKEN_MANAGER = true;
 //  JAVA_UNICODE_ESCAPE = true;
-  KEEP_LINE_COLUMN = false;
+  KEEP_LINE_COLUMN = true;
   NO_DFA = true;
 //  PARSER_INCLUDE = "stdio.h";
 //  TOKEN_INCLUDE = "<stdio.h>";

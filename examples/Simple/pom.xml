@@ -61,9 +61,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <configuration>
               <mainClass>simple1.Simple1</mainClass>
               <arguments>
-                <argument>${project.basedir}/simple1/in</argument>
-                <argument>${project.basedir}/simple1/out</argument>
-                <argument>${project.basedir}/simple1/err</argument>
+                <argument>${project.basedir}/simple1/compiler.in</argument>
+                <argument>${project.basedir}/simple1/compiler.out</argument>
+                <argument>${project.basedir}/simple1/compiler.err</argument>
               </arguments>
             </configuration>
           </execution>
@@ -76,9 +76,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <configuration>
               <mainClass>simple2.Simple2</mainClass>
               <arguments>
-                <argument>${project.basedir}/simple2/in</argument>
-                <argument>${project.basedir}/simple2/out</argument>
-                <argument>${project.basedir}/simple2/err</argument>
+                <argument>${project.basedir}/simple2/compiler.in</argument>
+                <argument>${project.basedir}/simple2/compiler.out</argument>
+                <argument>${project.basedir}/simple2/compiler.err</argument>
               </arguments>
             </configuration>
           </execution>
@@ -91,9 +91,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <configuration>
               <mainClass>simple3.Simple3</mainClass>
               <arguments>
-                <argument>${project.basedir}/simple3/in</argument>
-                <argument>${project.basedir}/simple3/out</argument>
-                <argument>${project.basedir}/simple3/err</argument>
+                <argument>${project.basedir}/simple3/compiler.in</argument>
+                <argument>${project.basedir}/simple3/compiler.out</argument>
+                <argument>${project.basedir}/simple3/compiler.err</argument>
               </arguments>
             </configuration>
           </execution>
@@ -106,9 +106,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <configuration>
               <mainClass>xlator.NL_Xlator</mainClass>
               <arguments>
-                <argument>${project.basedir}/xlator/in</argument>
-                <argument>${project.basedir}/xlator/out</argument>
-                <argument>${project.basedir}/xlator/err</argument>
+                <argument>${project.basedir}/xlator/compiler.in</argument>
+                <argument>${project.basedir}/xlator/compiler.out</argument>
+                <argument>${project.basedir}/xlator/compiler.err</argument>
               </arguments>
             </configuration>
           </execution>
@@ -121,9 +121,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <configuration>
               <mainClass>idlist.IdList</mainClass>
               <arguments>
-                <argument>${project.basedir}/idlist/in</argument>
-                <argument>${project.basedir}/idlist/out</argument>
-                <argument>${project.basedir}/idlist/err</argument>
+                <argument>${project.basedir}/idlist/compiler.in</argument>
+                <argument>${project.basedir}/idlist/compiler.out</argument>
+                <argument>${project.basedir}/idlist/compiler.err</argument>
               </arguments>
             </configuration>
           </execution>
@@ -142,18 +142,18 @@ THE POSSIBILITY OF SUCH DAMAGE.
             </goals>
             <configuration>
               <target>
-                <available file="${project.basedir}/simple1/out" property="isActualAvailable" />
+                <available file="${project.basedir}/simple1/compiler.out" property="isActualAvailable" />
                 <fail unless="isActualAvailable"
-                  message="${project.basedir}/simple1/out does not exist!" />
-                <available file="${project.basedir}/simple1/ref" property="isExpectedAvailable" />
+                  message="${project.basedir}/simple1/compiler.out does not exist!" />
+                <available file="${project.basedir}/simple1/compiler.ref" property="isExpectedAvailable" />
                 <fail unless="isExpectedAvailable"
-                  message="${project.basedir}/simple1/ref does not exist!" />
+                  message="${project.basedir}/simple1/compiler.ref does not exist!" />
                 <condition property="files.match">
-                  <filesmatch file1="${project.basedir}/simple1/out"
-                    file2="${project.basedir}/simple1/ref" textfile="true" />
+                  <filesmatch file1="${project.basedir}/simple1/compiler.out"
+                    file2="${project.basedir}/simple1/compiler.ref" textfile="true" />
                 </condition>
                 <fail unless="files.match"
-                  message="${project.basedir}/simple1/out does not match ${project.basedir}/simple1/ref!" />
+                  message="${project.basedir}/simple1/compiler.out does not match ${project.basedir}/simple1/compiler.ref!" />
               </target>
             </configuration>
           </execution>
@@ -166,15 +166,15 @@ THE POSSIBILITY OF SUCH DAMAGE.
 						</goals>
 						<configuration>
 							<target>
-								<available file="${project.basedir}/simple2/out" property="isActualAvailable" />
-								<fail unless="isActualAvailable" message="${project.basedir}/simple2/out does not exist!" />
-								<available file="${project.basedir}/simple2/ref" property="isExpectedAvailable" />
-								<fail unless="isExpectedAvailable" message="${project.basedir}/simple2/ref does not exist!" />
+								<available file="${project.basedir}/simple2/compiler.out" property="isActualAvailable" />
+								<fail unless="isActualAvailable" message="${project.basedir}/simple2/compiler.out does not exist!" />
+								<available file="${project.basedir}/simple2/compiler.ref" property="isExpectedAvailable" />
+								<fail unless="isExpectedAvailable" message="${project.basedir}/simple2/compiler.ref does not exist!" />
 								<condition property="files.match">
-									<filesmatch file1="${project.basedir}/simple2/out" file2="${project.basedir}/simple2/ref" />
+									<filesmatch file1="${project.basedir}/simple2/compiler.out" file2="${project.basedir}/simple2/compiler.ref" />
 								</condition>
-								<fail unless="files.match" message="${project.basedir}/simple2/out does not match
-          ${project.basedir}/simple2/ref!" />
+								<fail unless="files.match" message="${project.basedir}/simple2/compiler.out does not match
+          ${project.basedir}/simple2/compiler.ref!" />
 							</target>
 						</configuration>
 					</execution>
@@ -187,18 +187,18 @@ THE POSSIBILITY OF SUCH DAMAGE.
             </goals>
             <configuration>
               <target>
-                <available file="${project.basedir}/simple3/out" property="isActualAvailable" />
+                <available file="${project.basedir}/simple3/compiler.out" property="isActualAvailable" />
                 <fail unless="isActualAvailable"
-                  message="${project.basedir}/simple3/out does not exist!" />
-                <available file="${project.basedir}/simple3/ref" property="isExpectedAvailable" />
+                  message="${project.basedir}/simple3/compiler.out does not exist!" />
+                <available file="${project.basedir}/simple3/compiler.ref" property="isExpectedAvailable" />
                 <fail unless="isExpectedAvailable"
-                  message="${project.basedir}/simple3/ref does not exist!" />
+                  message="${project.basedir}/simple3/compiler.ref does not exist!" />
                 <condition property="files.match">
-                  <filesmatch file1="${project.basedir}/simple3/out"
-                    file2="${project.basedir}/simple3/ref" textfile="true" />
+                  <filesmatch file1="${project.basedir}/simple3/compiler.out"
+                    file2="${project.basedir}/simple3/compiler.ref" textfile="true" />
                 </condition>
                 <fail unless="files.match"
-                  message="${project.basedir}/simple3/out does not match ${project.basedir}/simple3/ref!" />
+                  message="${project.basedir}/simple3/compiler.out does not match ${project.basedir}/simple3/compiler.ref!" />
               </target>
             </configuration>
           </execution>
@@ -210,18 +210,18 @@ THE POSSIBILITY OF SUCH DAMAGE.
             </goals>
             <configuration>
               <target>
-                <available file="${project.basedir}/xlator/out" property="isActualAvailable" />
+                <available file="${project.basedir}/xlator/compiler.out" property="isActualAvailable" />
                 <fail unless="isActualAvailable"
-                  message="${project.basedir}/xlator/out does not exist!" />
-                <available file="${project.basedir}/xlator/ref" property="isExpectedAvailable" />
+                  message="${project.basedir}/xlator/compiler.out does not exist!" />
+                <available file="${project.basedir}/xlator/compiler.ref" property="isExpectedAvailable" />
                 <fail unless="isExpectedAvailable"
-                  message="${project.basedir}/xlator/ref does not exist!" />
+                  message="${project.basedir}/xlator/compiler.ref does not exist!" />
                 <condition property="files.match">
-                  <filesmatch file1="${project.basedir}/xlator/out"
-                    file2="${project.basedir}/xlator/ref" textfile="true" />
+                  <filesmatch file1="${project.basedir}/xlator/compiler.out"
+                    file2="${project.basedir}/xlator/compiler.ref" textfile="true" />
                 </condition>
                 <fail unless="files.match"
-                  message="${project.basedir}/xlator/out does not match ${project.basedir}/xlator/ref!" />
+                  message="${project.basedir}/xlator/compiler.out does not match ${project.basedir}/xlator/compiler.ref!" />
               </target>
             </configuration>
           </execution>
@@ -233,18 +233,18 @@ THE POSSIBILITY OF SUCH DAMAGE.
             </goals>
             <configuration>
               <target>
-                <available file="${project.basedir}/idlist/out" property="isActualAvailable" />
+                <available file="${project.basedir}/idlist/compiler.out" property="isActualAvailable" />
                 <fail unless="isActualAvailable"
-                  message="${project.basedir}/idlist/out does not exist!" />
-                <available file="${project.basedir}/idlist/ref" property="isExpectedAvailable" />
+                  message="${project.basedir}/idlist/compiler.out does not exist!" />
+                <available file="${project.basedir}/idlist/compiler.ref" property="isExpectedAvailable" />
                 <fail unless="isExpectedAvailable"
-                  message="${project.basedir}/idlist/ref does not exist!" />
+                  message="${project.basedir}/idlist/compiler.ref does not exist!" />
                 <condition property="files.match">
-                  <filesmatch file1="${project.basedir}/idlist/out"
-                    file2="${project.basedir}/idlist/ref" textfile="true" />
+                  <filesmatch file1="${project.basedir}/idlist/compiler.out"
+                    file2="${project.basedir}/idlist/compiler.ref" textfile="true" />
                 </condition>
                 <fail unless="files.match"
-                  message="${project.basedir}/idlist/out does not match ${project.basedir}/idlist/ref!" />
+                  message="${project.basedir}/idlist/compiler.out does not match ${project.basedir}/idlist/compiler.ref!" />
               </target>
             </configuration>
           </execution>
