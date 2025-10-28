@@ -611,45 +611,6 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
           cb.println("  }");
           cb.println();
 
-          // Add-in a string based constructor because its convenient
-          //  (modern only to prevent regressions)
-          if (isJavaModernMode) {
-            cb.println("  /** Constructor (modern template). */");
-            cb.println(
-                "  public "
-                    + context.globals().cu_name
-                    + "(String s) throws ParseException, "
-                    + JavaTemplates.getTokenMgrErrorClass()
-                    + " {");
-            cb.println("    this(new " + stringReaderClass + "(s));");
-            cb.println("  }");
-            cb.println();
-
-            cb.println("  /** Reinitialise (modern template). */");
-            cb.println("  public void ReInit(String s) {");
-            cb.println("    ReInit(new " + stringReaderClass + "(s));");
-            cb.println("  }");
-            cb.println();
-
-            cb.println("  /** Constructor (modern template). */");
-            cb.println(
-                "  public "
-                    + context.globals().cu_name
-                    + "(java.io.InputStream is) throws ParseException, "
-                    + JavaTemplates.getTokenMgrErrorClass()
-                    + ",");
-            cb.println("                                    java.io.IOException {");
-            cb.println("    this(new StreamProvider(is));");
-            cb.println("  }");
-            cb.println();
-
-            cb.println("  /** Reinitialise (modern template). */");
-            cb.println("  public void ReInit(java.io.InputStream is) throws java.io.IOException {");
-            cb.println("    ReInit(new StreamProvider(is));");
-            cb.println("  }");
-          }
-          cb.println();
-
           cb.println("  /** Reinitialise. */");
           cb.println("  public " + pStatic + "void ReInit(" + readerInterfaceName + " reader) {");
           if (Options.getJavaUnicodeEscape()) {

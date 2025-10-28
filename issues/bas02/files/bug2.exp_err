@@ -1,5 +1,5 @@
 ParseException parsing input file
-Encountered: <LBRACE> / "{".
+Encountered: <LBRACE> / "{", at line 1, column 2.
 Was expecting one of these terminals within expansion starting at 145:5:
     <IDENTIFIANT> (inside 145:5) ...
     <IDENTIFIANT> (inside 160:5) ...
