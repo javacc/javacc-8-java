@@ -122,6 +122,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
               <!--              <postBuildHookScript>verify.bsh</postBuildHookScript>-->
               <settingsFile>${project.basedir}/it/settings.xml</settingsFile>
               <streamLogs>true</streamLogs> <!-- default false -->
+              <profiles>
+                <profile>!no_local_java_generator_version</profile>
+              </profiles>
             </configuration>
 
             <executions>

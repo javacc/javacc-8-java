@@ -134,8 +134,8 @@ ${decls}
     EOFLoop:
     for (;;) {
       // First see if we have any input at all.
-      try {
-        curChar = input_stream.BeginToken();
+      if (input_stream.hasNextToken()) {
+        curChar = input_stream.getNextChar();
 #if DEBUG_TOKEN_MANAGER
         if (trace_enabled()) System.err.println(
               "Read 1st char for any kind: " + disp_char(curChar) + 
@@ -147,7 +147,7 @@ ${decls}
 #if IGNORE_CASE
         curChar = Character.toLowerCase(curChar);
 #fi
-      } catch (Exception e) {
+      } else {
 #if DEBUG_TOKEN_MANAGER
         if (trace_enabled()) System.err.println(
               disp_state(curLexState, lexStateNames) +
@@ -285,8 +285,8 @@ ${decls}
 #fi
           lastReadPosition = 0;
           jjmatchedKind = Integer.MAX_VALUE;
-          try {
-            curChar = input_stream.readChar();
+          if (input_stream.hasNextChar()) {
+            curChar = input_stream.getNextChar();
 #if DEBUG_TOKEN_MANAGER
             if (trace_enabled()) System.err.println(
                   "Read next char for a MORE: " + disp_char(curChar) +
@@ -299,7 +299,7 @@ ${decls}
             curChar = (int) Character.toLowerCase((char) curChar);
 #fi
             continue;
-          } catch (java.io.IOException e1) {
+          } else {
 #if DEBUG_TOKEN_MANAGER
             if (trace_enabled()) System.err.println(
                   disp_state(curLexState, lexStateNames) +
@@ -434,12 +434,12 @@ ${decls}
 #fi
 
   protected ${STATIC?static :}boolean moveToNextChar() {
-    try {
-      curChar = input_stream.readChar();
+    if (input_stream.hasNextChar()) {
+      curChar = input_stream.getNextChar();
 #if IGNORE_CASE
       curChar = (int) Character.toLowerCase((char) curChar);
 #fi
-    } catch (java.io.IOException e) {
+    } else {
       return false;
     }
     return true;
@@ -620,10 +620,9 @@ ${decls}
     int errorColumn = input_stream.getEndColumn();
     String errorAfter = null;
     boolean eofSeen = false;
-    try {
-      input_stream.readChar();
+    if (input_stream.hasNextChar()) {
       input_stream.backup(1);
-    } catch (java.io.IOException e1) {
+    } else {
       eofSeen = true;
       errorAfter = lastReadPosition <= 1 ? "" : input_stream.GetImage();
       if (curChar == '\n' || curChar == '\r') {

@@ -47,6 +47,7 @@ public class CharCollector implements CharStream {
 
   protected boolean trackLineColumn = true;
   protected int tabSize = 1;
+  private char nextChar;
 
   /** Puts a character into the buffer. Called by the GUI. */
   public final synchronized void put(char c) {
@@ -206,5 +207,42 @@ public class CharCollector implements CharStream {
 
   public void setTabSize(int i) {
     tabSize = i;
+  }
+
+  /**
+   * Returns next character.
+   *
+   * @return next character in the input
+   */
+  public char getNextChar() {
+    return nextChar;
+  }
+
+  /**
+   * Checks next character.
+   *
+   * @return whether next character is available
+   */
+  public boolean hasNextChar() {
+    try {
+      nextChar = readChar();
+      return true;
+    } catch (java.io.IOException ex) {
+      return false;
+    }
+  }
+
+  /**
+   * Checks next character and marks new token.
+   *
+   * @return whether next character is available
+   */
+  public boolean hasNextToken() {
+    try {
+      nextChar = BeginToken();
+      return true;
+    } catch (java.io.IOException ex) {
+      return false;
+    }
   }
 }

@@ -87,6 +87,10 @@ public class Node implements Tree {
     return (children == null) ? 0 : children.length;
   }
 
+  public Node[] jjtGetChildren() {
+      return children;
+  }
+
   /** Accept the visitor. **/
   public Object jjtAccept(JavaParserVisitor visitor, Object data) {
     return visitor.visit(this, data);

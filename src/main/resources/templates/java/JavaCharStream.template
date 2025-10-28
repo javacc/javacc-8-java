@@ -58,51 +58,38 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class JavaCharStream {
 
   protected char[] nextCharBuf;
   protected int    nextCharInd = -1;
+  private char nextChar;
+  private char nextByte;
 
 #if KEEP_LINE_COLUMN
-  //protected boolean trackLineColumn = true;
   protected int[]   bufline;
   protected int[]   bufcolumn;
   protected int     line = 1;
   protected int     column = 0;
   protected boolean prevCharIsCR = false;
   protected boolean prevCharIsLF = false;
-#else
-  //protected boolean trackLineColumn = false;
 #fi
   protected int     tabSize = 1;
 
-  /** Get starting character for token. */
-  // Don't know why this method is different than in SimpleCharStream. Makes EOF handling different.
-  public char BeginToken() throws IOException {
-    if (inBuf > 0) {
-      --inBuf;
-      if (++bufpos == bufsize) {
-        bufpos = 0;
-      }
-      tokenBegin = bufpos;
-      return buffer[bufpos];
-    }
-    tokenBegin = 0;
-    bufpos = -1;
-    return readChar();
-  }
-
   /** Read a character. */
-  public char readChar() throws IOException {
+  public boolean hasNextChar() {
     if (inBuf > 0) {
       --inBuf;
       if (++bufpos == bufsize) {
         bufpos = 0;
       }
-      return buffer[bufpos];
+      nextChar = buffer[bufpos];
+      return true;
     }
 
     char c;
     if (++bufpos == available) {
       AdjustBuffSize();
     }
-    if ((buffer[bufpos] = c = ReadByte()) == '\\') {
+    if (!hasNextByte()) {
+      return false;
+    }
+    if ((buffer[bufpos] = c = nextByte) == '\\') {
 #if KEEP_LINE_COLUMN
       UpdateLineColumn(c);
 #fi
@@ -112,29 +99,31 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class JavaCharStream {
         if (++bufpos == available) {
           AdjustBuffSize();
         }
-        try {
-          if ((buffer[bufpos] = c = ReadByte()) != '\\') {
-#if KEEP_LINE_COLUMN
-            UpdateLineColumn(c);
-#fi
-            // found a non-backslash char.
-            if ((c == 'u') && ((backSlashCnt & 1) == 1)) {
-              if (--bufpos < 0) {
-                bufpos = bufsize - 1;
-              }
-              break;
-            }
-            backup(backSlashCnt);
-            return '\\';
-          }
-        } catch (IOException e) {
+
+        if (!hasNextByte()) {
           // We are returning one backslash so we should only backup (count-1)
           if (backSlashCnt > 1) {
             backup(backSlashCnt - 1);
           }
-          return '\\';
+          nextChar = '\\';
+          return true;
         }
+        if ((buffer[bufpos] = c = nextByte) != '\\') {
+#if KEEP_LINE_COLUMN
+          UpdateLineColumn(c);
+#fi
+          // found a non-backslash char.
+          if ((c == 'u') && ((backSlashCnt & 1) == 1)) {
+            if (--bufpos < 0) {
+              bufpos = bufsize - 1;
+            }
+            break;
+          }
 
+          backup(backSlashCnt);
+          nextChar = '\\';
+          return true;
+        }
 #if KEEP_LINE_COLUMN
         UpdateLineColumn(c);
 #fi
@@ -142,42 +131,44 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class JavaCharStream {
       }
 
       // Here, we have seen an odd number of backslash's followed by a 'u'
-      try {
-        while ((c = ReadByte()) == 'u') {
+      while (hasNextByte() && nextByte == 'u') {
 #if KEEP_LINE_COLUMN
-          ++column;
+        ++column;
 #else
-          //;
-#fi
-        }
-        buffer[bufpos] = c = (char) ( hexval(c) << 12
-                                    | hexval(ReadByte()) << 8
-                                    | hexval(ReadByte()) << 4
-                                    | hexval(ReadByte()) );
-#if KEEP_LINE_COLUMN
-        column += 4;
-#fi
-      } catch (IOException e) {
-#if KEEP_LINE_COLUMN
-        throw new ${LEGACY_EXCEPTION_HANDLING?Error:RuntimeException}(
-                  "Invalid escape character at line " + line + " column " + column + ".");
-#else
-        throw new ${LEGACY_EXCEPTION_HANDLING?Error:RuntimeException}(
-                  "Invalid escape character in input.");
+        ;
 #fi
       }
+      c = (char) (hexval(nextByte) << 12);
+      for (int shift = 8; shift >= 0; shift -= 4) {
+        if (!hasNextByte()) {
+#if KEEP_LINE_COLUMN
+          throw new ${LEGACY_EXCEPTION_HANDLING?Error:RuntimeException}("Invalid escape character at line " + line
+                                         + " column " + column + ".");
+#else
+          throw new ${LEGACY_EXCEPTION_HANDLING?Error:RuntimeException}(\"Invalid escape character in input\");
+#fi
 
+        }
+        c |= hexval(nextByte) << shift;
+      }
+      buffer[bufpos] = c;
+#if KEEP_LINE_COLUMN
+      column += 4;
+#fi
       if (backSlashCnt == 1) {
-        return c;
+        nextChar = c;
+        return true;
       } else {
         backup(backSlashCnt - 1);
-        return '\\';
+        nextChar = '\\';
+        return true;
       }
     } else {
 #if KEEP_LINE_COLUMN
       UpdateLineColumn(c);
 #fi
-      return c;
+      nextChar = c;
+      return true;
     }
   }
 
@@ -239,14 +230,7 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class JavaCharStream {
     tokenBegin = 0;
   }
 
-  protected char ReadByte() throws IOException {
-    if (++nextCharInd >= maxNextCharInd) {
-      FillBuff();
-    }
-    return nextCharBuf[nextCharInd];
-  }
-
-  protected void FillBuff() throws IOException {
+  protected boolean FillBuff() {
     int i;
     if (maxNextCharInd == 4096) {
       maxNextCharInd = nextCharInd = 0;
@@ -254,23 +238,71 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class JavaCharStream {
     try {
       if ((i = inputStream.read(nextCharBuf, maxNextCharInd, 4096 - maxNextCharInd)) == -1) {
         inputStream.close();
-        throw new IOException("End of file");
+        reset();
+        return false;
       } else {
         maxNextCharInd += i;
+        return true;
       }
     } catch (IOException e) {
-      if (bufpos != 0) {
-        --bufpos;
-        backup(0);
-#if KEEP_LINE_COLUMN
-      } else {
-        bufline[bufpos] = line;
-        bufcolumn[bufpos] = column;
-#fi
-      }
-      throw e;
+      reset();
+      return false;
     }
   }
+
+  private void reset() {
+    if (bufpos != 0) {
+      --bufpos;
+      backup(0);
+    #if KEEP_LINE_COLUMN
+    } else {
+      bufline[bufpos] = line;
+      bufcolumn[bufpos] = column;
+    #fi
+    }
+  }
+
+  protected boolean hasNextByte() {
+    if (++nextCharInd >= maxNextCharInd) {
+      if (!FillBuff()) {
+        return false;
+      }
+    }
+    nextByte = nextCharBuf[nextCharInd];
+    return true;
+  }
+
+  /**
+   * Returns next character.
+   *
+   * @return next character in the input
+   */
+  public char getNextChar() {
+    return nextChar;
+  }
+
+  /**
+   * Checks next character and marks new token.
+   *
+   * @return whether next character is available
+   */
+  public boolean hasNextToken() {
+    if (inBuf > 0) {
+      --inBuf;
+
+      if (++bufpos == bufsize) {
+        bufpos = 0;
+      }
+      tokenBegin = bufpos;
+      nextChar = buffer[bufpos];
+      return true;
+    }
+
+    tokenBegin = 0;
+    bufpos = -1;
+    return hasNextChar();
+  }
+
 
 #if KEEP_LINE_COLUMN
   protected void UpdateLineColumn(char c) {
@@ -308,7 +340,7 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class JavaCharStream {
   }
 
 #fi
-  static int hexval(char c) throws IOException {
+  static int hexval(char c) {
     switch (c) {
       case '0':
         return 0;
@@ -349,8 +381,8 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class JavaCharStream {
       case 'f':
       case 'F':
         return 15;
-      default:
-        throw new IOException(); // Should never come here
+      default: // Should never come here
+        throw new IllegalArgumentException("Invalid hax character :" + c);
     }
   }
 
@@ -690,10 +722,6 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class JavaCharStream {
     line = bufline[j];
     column = bufcolumn[j];
   }
-
-  //boolean getTrackLineColumn()         { return trackLineColumn; }
-
-  //void setTrackLineColumn(boolean tlc) { trackLineColumn = tlc; }
 
 #fi
   public int  getTabSize()      { return tabSize; }

@@ -55,49 +55,70 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class SimpleCharStream {
   protected char[] buffer;
   protected int    maxNextCharInd = 0;
   protected int    inBuf = 0;
+  private char nextChar;
 
 #if KEEP_LINE_COLUMN
-  //protected boolean trackLineColumn = true;
   protected int[]   bufline;
   protected int[]   bufcolumn;
   protected int     line = 1;
   protected int     column = 0;
   protected boolean prevCharIsCR = false;
   protected boolean prevCharIsLF = false;
-#else
-  //protected boolean trackLineColumn = false;
 #fi
   protected int     tabSize = 1;
 
-  /** Start. */
-  public char BeginToken() throws IOException {
+  /**
+   * Checks next character and marks token start.
+   *
+   * @return whether next character is available
+   */
+  public boolean hasNextToken() {
     tokenBegin = -1;
-    char c = readChar();
-    tokenBegin = bufpos;
-    return c;
+    if (hasNextChar()) {
+      tokenBegin = bufpos;
+      return true;
+    }
+    return false;
   }
 
-  /** Read a character. */
-  public char readChar() throws IOException {
+  /**
+   * Gets next character from the input.
+   *
+   * @return next character in the input
+   */
+  public char getNextChar() {
+    return nextChar;
+  }
+
+  /**
+   * Checks if there is another character in the input.
+   *
+   * @return whether next character exists
+   */
+  public boolean hasNextChar() {
     if (inBuf > 0) {
       --inBuf;
       if (++bufpos == bufsize) {
         bufpos = 0;
       }
-      return buffer[bufpos];
+      nextChar = buffer[bufpos];
+      return true;
     }
 
     if (++bufpos >= maxNextCharInd) {
-      FillBuff();
+      if (!FillBuff()) {
+        return false;
+      }
     }
     char c = buffer[bufpos];
 #if KEEP_LINE_COLUMN
     UpdateLineColumn(c);
 #fi
-    return c;
+    nextChar = c;
+    return true;
   }
 
-  protected void FillBuff() throws IOException {
+  protected boolean FillBuff() {
     if (maxNextCharInd == available) {
       if (available == bufsize) {
         if (tokenBegin > 2048) {
@@ -120,17 +141,23 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class SimpleCharStream {
       final int i = inputStream.read(buffer, maxNextCharInd, available - maxNextCharInd);
       if (i <= 0) {
         inputStream.close();
-        throw new IOException("End of file");
+        reset();
+        return false;
       } else {
         maxNextCharInd += i;
+        return true;
       }
     } catch (IOException e) {
-      --bufpos;
-      backup(0);
-      if (tokenBegin == -1) {
-        tokenBegin = bufpos;
-      }
-      throw e;
+      reset();
+      return false;
+    }
+  }
+
+  private void reset() {
+    --bufpos;
+    backup(0);
+    if (tokenBegin == -1) {
+      tokenBegin = bufpos;
     }
   }
 
@@ -456,10 +483,6 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class SimpleCharStream {
     line = bufline[j];
     column = bufcolumn[j];
   }
-
-  //boolean getTrackLineColumn()               { return trackLineColumn; }
-
-  //void setTrackLineColumn(final boolean tlc) { trackLineColumn = tlc; }
 
 #fi
   public int  getTabSize()            { return tabSize; }

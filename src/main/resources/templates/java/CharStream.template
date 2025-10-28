@@ -45,18 +45,27 @@
 ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}interface CharStream {
 
   /**
-   * Returns the next character that marks the beginning of the next token.<br>
-   * All characters must remain in the buffer between two successive calls
-   *  to this method to implement backup correctly.
+   * Returns the next character from the selected input. The method
+   * of selecting the input is the responsibility of the class
+   * implementing this interface. Should be called only after hasNextChar
+   * or hasNextToken returned true. In other cases the behavior is not defined
+   * and runtime exception such as IndexOutOfBoundsException may be thrown.
    */
-  char BeginToken() throws java.io.IOException;
+  char getNextChar();
 
   /**
-   * Returns the next character from the selected input.<br>
-   * The method of selecting the input is the responsibility of the class implementing
-   *  this interface. Can throw any java.io.IOException.
+   * Checks whether there are unread characters in the input.
+   *
+   * @return whether next character exists
    */
-  char readChar() throws java.io.IOException;
+  boolean hasNextChar();
+
+  /**
+   * Similar to hasNextCharacter, but may have additional side effects.
+   *
+   * @return whether next character exists
+   */
+  boolean hasNextToken();
 
   /**
    * Backs up the input stream by amount steps.<br>
@@ -98,25 +107,25 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}interface CharStream {
 
   /**
    * Returns the line number of the first character for current token
-   *  (being matched after the last call to BeginToken).
+   *  (being matched after the last call to hasNextToken).
    */
   int getBeginLine();
 
   /**
    * Returns the column number of the first character for current token
-   *  (being matched after the last call to BeginToken).
+   *  (being matched after the last call to hasNextToken).
    */
   int getBeginColumn();
 
   /**
    * Returns the line number of the last character for current token
-   *  (being matched after the last call to BeginToken).
+   *  (being matched after the last call to hasNextToken).
    */
   int getEndLine();
 
   /**
    * Returns the column number of the last character for current token
-   *  (being matched after the last call to BeginToken).
+   *  (being matched after the last call to hasNextToken).
    */
   int getEndColumn();
 

@@ -2317,10 +2317,10 @@ TOKEN:
 				}
 
 				if(! foundLineSeparator){
-					throw generateParseException();
+					throw generateParseException("Expected line separator");
 				}
 			} else {
-				throw generateParseException();
+				throw generateParseException("Could not insert semicolon");
 			}
 		} 
 	}

@@ -51,6 +51,10 @@ public class Node implements Tree {
 		return (children == null) ? 0 : children.length;
 	}
 
+	public Node[] jjtGetChildren() {
+		return children;
+	}
+
 	public void jjtSetValue(Object value) {
 		this.value = value;
 	}
