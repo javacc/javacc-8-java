@@ -256,13 +256,5 @@ THE POSSIBILITY OF SUCH DAMAGE.
       </build>
     </profile>
 
-    <profile>
-      <!-- temp, to override parent setting -->
-      <id>no_local_java_generator_version</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-    </profile>
-
   </profiles>
 </project>

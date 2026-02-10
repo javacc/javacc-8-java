@@ -93,5 +93,5 @@ jobs:
       run: mvn install -B --show-version --file javacc-8-java/pom.xml -P!run-its -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
     - name: Run install on javacc-8-java with integration tests
-      run: mvn install -B --show-version --file javacc-8-java/pom.xml -P!no_local_java_generator_version -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      run: mvn install -B --show-version --file javacc-8-java/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       
