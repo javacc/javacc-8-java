@@ -34,8 +34,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org</groupId>
-    <artifactId>javacc</artifactId>
+    <groupId>org.javacc</groupId>
+    <artifactId>base</artifactId>
     <version>8.1.0</version>
     <relativePath></relativePath>
   </parent>
