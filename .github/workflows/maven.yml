@@ -90,4 +90,4 @@ jobs:
       run: mvn install -B --show-version --file javacc-8-core/pom.xml
 
     - name: Run install on javacc-8-java
-      run: mvn install -B --show-version --file javacc-8-java/pom.xml
+      run: mvn install -B --show-version --file javacc-8-java/pom.xml -P!no_local_java_generator_version
