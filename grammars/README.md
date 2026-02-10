@@ -1,4 +1,4 @@
-In this directory lie some grammars shared by contributors, with their build files;  
+In this directory lie some grammars shared by contributors, usually under src/main/javacc;  
 feel free to enhance them and share them back.
 
 They are considered as a subset of integration tests (they should at least generate properly).

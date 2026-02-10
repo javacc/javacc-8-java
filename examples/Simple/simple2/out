@@ -1,12 +1,12 @@
-Call:   Input
-  Call:   MatchedBraces
-    Consumed token: <5, "{"> at 1:1
-    Call:   MatchedBraces
-      Consumed token: <5, "{"> at 1:2
-      Consumed token: <6, "}"> at 1:5
-    Return: MatchedBraces
-    Consumed token: <6, "}"> at 2:1
-  Return: MatchedBraces
-  Consumed token: <0, <EOF>> at 2:3
-Return: Input
+Call:   0: Input-87 (pa)
+  Call:   2: MatchedBraces-94 (pa)
+    Consumed token: <5 / "{">, @ 1:1 (in jj_consume_token()) (pa)
+    Call:   4: MatchedBraces-94 (pa)
+      Consumed token: <5 / "{">, @ 1:2 (in jj_consume_token()) (pa)
+      Consumed token: <6 / "}">, @ 1:5 (in jj_consume_token()) (pa)
+    Return: 4: MatchedBraces-94 (pa)
+    Consumed token: <6 / "}">, @ 2:1 (in jj_consume_token()) (pa)
+  Return: 2: MatchedBraces-94 (pa)
+  Consumed token: <0 / <EOF>>, @ 2:3 (in jj_consume_token()) (pa)
+Return: 0: Input-87 (pa)
 matched

@@ -1,0 +1,26 @@
+import java.io.*;
+import java.util.*;
+import org.codehaus.plexus.util.*;
+
+// just checks for a java file with customized contents
+
+try
+{
+    File of = new File( basedir, "target/generated-sources/java/simple1/ParseException.java" );
+    
+    String contents = FileUtils.fileRead( of, "UTF-8" );
+    if ( !contents.contains( "// !!! Customization test !!!" ) )
+    {
+        System.err.println( "Generated ParseException.java is not the customized one expected" );
+        return false;
+    }
+    
+    System.out.println( "Generated ParseException.java is the customized one expected" );
+}
+catch( Throwable t )
+{
+    t.printStackTrace();
+    return false;
+}
+
+return true;

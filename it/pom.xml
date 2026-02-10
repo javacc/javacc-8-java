@@ -47,6 +47,11 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
   <name>JavaCC Java code generator / it</name>
 
+  <!-- temp, overriding base -->
+  <properties>
+    <maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
+  </properties>
+
   <!--
        ment to be called by maven-invoker-plugin from javacc-8-java/pom.xml,
        note: parent is javacc-8/pom.xml, not javacc-8-java/pom.xml

@@ -32,10 +32,8 @@ options {
 
 PARSER_BEGIN(GdmoTranslator)
 
-import syntaxtree.*;
-import visitor.*;
-
-
+//import syntaxtree.*;
+//import visitor.*;
 
 public class GdmoTranslator {
 
@@ -58,7 +56,7 @@ public final void go() {
 		// All JAVACC specifications have the same level of hierarchy
 		// therefore any of them may be used as a target production. Here
 		// we try to ecvaluate the production DocumentSpecification()
-		Node root = DocumentSpecification();
+		/*Node root = */DocumentSpecification();
 
 
 		// Prepare the GdmoVisitor class to perform UML generation

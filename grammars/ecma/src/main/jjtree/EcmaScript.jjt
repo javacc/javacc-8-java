@@ -2317,10 +2317,10 @@ TOKEN:
 				}
 
 				if(! foundLineSeparator){
-					throw generateParseException();
+					throw generateParseException(" at L" + inputToken.beginLine + ":C" + inputToken.beginColumn);
 				}
 			} else {
-				throw generateParseException();
+				throw generateParseException(" at L" + inputToken.beginLine + ":C" + inputToken.beginColumn);
 			}
 		} 
 	}

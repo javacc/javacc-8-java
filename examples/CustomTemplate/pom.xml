@@ -90,8 +90,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <configuration>
               <executable>jar</executable>
               <arguments>
-                <argument>-c</argument>
-                <argument>-f</argument>
+                <argument>cf</argument>
                 <argument>${basedir}/target/custom/cust-tpt.jar</argument>
                 <argument>-C</argument>
                 <argument>${basedir}/src/main/custom</argument>
@@ -126,9 +125,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
       </plugin>
 
       <plugin>
-        <!-- now in the normal process-resources phase: -->
+        <!-- now in the normal process-resources phase for JavaCC compilation: -->
         <!-- add the custom jar in the dependencies
-             (by chance this keeps the dependencies already set in the parent) -->
+             (this keeps the dependencies already set in the parent) -->
         <groupId>org.javacc.plugin</groupId>
         <artifactId>javacc-maven-plugin</artifactId>
         <dependencies>

@@ -1256,7 +1256,8 @@ void string_type() : {}
 /********** PRODUCTION 294 **********/
 void subsuper() : {}
 {
-        (supertype_constraint())? (subtype_declaration())?
+//        (supertype_constraint())? (subtype_declaration())?
+        (supertype_constraint())? subtype_declaration()
 }
 
 /********** PRODUCTION 295 **********/

@@ -32,40 +32,17 @@ THE POSSIBILITY OF SUCH DAMAGE.
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
+  
   <parent>
     <groupId>org.javacc.generator.java</groupId>
-    <artifactId>it</artifactId>
+    <artifactId>grammars</artifactId>
     <version>1.1.0-SNAPSHOT</version>
-    <relativePath>../it</relativePath>
   </parent>
+  
+  <groupId>org.javacc.generator.java.grammars</groupId>
+  <artifactId>chemical</artifactId>
+  <packaging>jar</packaging>
 
-  <artifactId>grammars</artifactId>
-  <packaging>pom</packaging>
-
-  <name>JavaCC Java code generator / grammars</name>
-
-  <modules>
-    <module>asn1</module>
-    <module>c</module>
-    <module>chemical</module>
-    <module>cobol</module>
-    <module>dtd</module>
-    <module>ecma</module>
-    <module>express</module>
-    <module>formsplsql</module>
-    <module>gdmo</module>
-    <module>idl</module>
-    <!--    <module>infosapient</module>-->
-    <module>java</module>
-    <!--    <module>javacc</module>-->
-    <module>json</module>
-    <module>oberon</module>
-    <!--    <module>petal</module>-->
-    <module>php</module>
-    <module>plsql</module>
-    <!--    <module>rtf</module>-->
-    <!--    <module>sql</module>-->
-  </modules>
-
+  <name>JavaCC Java code generator / grammars / chemical</name>
+  
 </project>

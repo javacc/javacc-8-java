@@ -61,7 +61,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <configuration>
               <mainClass>EcmaScript</mainClass>
               <arguments>
-                <argument>${project.basedir}/ecma/main.ecma</argument>
+                <argument>${project.basedir}/src/main/test/main.ecma</argument>
               </arguments>
             </configuration>
           </execution>

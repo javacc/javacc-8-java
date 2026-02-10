@@ -661,7 +661,7 @@ ${decls}
   }
 
   static String disp_char(final int ic) {
-    return "`" + String.valueOf(ic) + " / '" + add_escapes(ic) + "'\u00b4";
+    return "<" + String.valueOf(ic) + " / '" + add_escapes(ic) + "'>";
   }
 
   /**
