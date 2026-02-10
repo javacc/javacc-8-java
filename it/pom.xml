@@ -226,7 +226,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
                   <artifactId>javacc</artifactId>
                   <!--                  <version>${javacc.v7.version}</version>-->
                   <!--                  <version>7.0.0</version>-->
-<!--                  <version>6.1.2</version>-->
+                  <!--                  <version>6.1.2</version>-->
                   <version>5.0</version>
                   <!--                  <version>4.2</version>-->
                   <scope>runtime</scope>
@@ -254,6 +254,14 @@ THE POSSIBILITY OF SUCH DAMAGE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+
+    <profile>
+      <!-- temp, to override parent setting -->
+      <id>no_local_java_generator_version</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
     </profile>
 
   </profiles>
