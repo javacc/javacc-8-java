@@ -41,8 +41,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-#       os: [ubuntu-latest, windows-latest, macos-latest]
-        os: [ubuntu-latest]
+       os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
 
@@ -85,36 +84,19 @@ jobs:
     # -X: debug mode; -N: non-recursive (don't build submodules)
 
     - name: Build install on javacc-8 only
-      run: mvn -B -N --file javacc-8/pom.xml --show-version install
+      run: mvn -B -N --file javacc-8/pom.xml                  --show-version install
 
     - name: Run install on javacc-8-core
-      run: mvn -B --file javacc-8-core/pom.xml --show-version install
+      run: mvn -B --file javacc-8-core/pom.xml                --show-version install
 
     - name: Run install on javacc-8-java skipping integration tests
-      run: mvn -B --file javacc-8-java/pom.xml -P!run-its --show-version install
+      run: mvn -B --file javacc-8-java/pom.xml    -P!run-its  --show-version install
 
-    # integration test bas01 run directly
-    - name: Run clean verify on javacc-8-java / integration tests
-      run: mvn -B --file javacc-8-java/issues/bas01/pom.xml -P disp-per,doNotFailOnError-check-java-issues --show-version clean verify
-      
-    - name: read actual output file (ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      uses: andstor/file-reader-action@v1
-      with:
-         path: "/home/runner/work/javacc-8-java/javacc-8-java/javacc-8-java/issues/bas01/files/clc1.err"
-      
-    - name: read expected output file (ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      uses: andstor/file-reader-action@v1
-      with:
-         path: "/home/runner/work/javacc-8-java/javacc-8-java/javacc-8-java/issues/bas01/files/clc1.exp_err"
-      
-    # integration tests run directly
-    - name: Run clean verify on javacc-8-java / integration tests
-      run: mvn -B --file javacc-8-java/it/pom.xml -Pdisp-per --show-version clean verify
+    # integration tests run directly (no doNotFailOnError-check-java-issues)
+    - name: Run clean verify on integration tests of javacc-8-java
+      run: mvn -B --file javacc-8-java/it/pom.xml -P disp-per --show-version clean verify
 
-    # integration tests run through Maven Invoker Plugin show(ed?) problems:
-    # profile no_local_java_generator_version is activated, so traces are not the expected ones
+    # integration tests run through Maven Invoker Plugin
     - name: Run clean verify on javacc-8-java with integration tests
-      run: mvn -B --file javacc-8-java/pom.xml -Pdisp-per --show-version clean verify
+      run: mvn -B --file javacc-8-java/pom.xml    -P disp-per --show-version clean verify
       
