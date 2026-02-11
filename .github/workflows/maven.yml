@@ -42,7 +42,7 @@ jobs:
     strategy:
       matrix:
 #       os: [ubuntu-latest, windows-latest, macos-latest]
-        os: [windows-latest]
+        os: [ubuntu-latest]
 
     steps:
 
@@ -97,12 +97,14 @@ jobs:
     - name: Run clean verify on javacc-8-java / integration tests
       run: mvn -B --file javacc-8-java/issues/bas01/pom.xml -P disp-per,doNotFailOnError-check-java-issues --show-version clean verify
       
-    - name: read actual output file
+    - name: read actual output file (ubuntu)
+      if: matrix.os == 'ubuntu-latest'
       uses: andstor/file-reader-action@v1
       with:
          path: "/home/runner/work/javacc-8-java/javacc-8-java/javacc-8-java/issues/bas01/files/clc1.err"
       
-    - name: read expected output file
+    - name: read expected output file (ubuntu)
+      if: matrix.os == 'ubuntu-latest'
       uses: andstor/file-reader-action@v1
       with:
          path: "/home/runner/work/javacc-8-java/javacc-8-java/javacc-8-java/issues/bas01/files/clc1.exp_err"
