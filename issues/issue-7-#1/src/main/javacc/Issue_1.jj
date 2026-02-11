@@ -1,6 +1,6 @@
 PARSER_BEGIN(ElementsUsuels2)
 
-/** Une illustration de "regular_expr_production" fréquemment rencontrées. */
+/** An illustration of "regular_expr_production" often encountered. */
 public class ElementsUsuels2
 {
   public static final void main(String args []) throws ParseException
