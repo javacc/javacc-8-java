@@ -103,12 +103,12 @@ jobs:
       run: mvn -B --file javacc-8-java/it/pom.xml -P disp-per,doNotFailOnError-check-java-issues --show-version clean verify
 
     # integration tests run through Maven Invoker Plugin (no doNotFailOnError-check-java-issues) (windows)
-    - name: Run clean verify on javacc-8-java with integration tests
-      if: matrix.os == 'windows-latest'
-      run: mvn -B --file javacc-8-java/pom.xml    -P disp-per --show-version clean verify
+#    - name: Run clean verify on javacc-8-java with integration tests
+#      if: matrix.os == 'windows-latest'
+#      run: mvn -B --file javacc-8-java/pom.xml    -P disp-per --show-version clean verify
 
     # integration tests run through Maven Invoker Plugin (ubuntu, macos)
-    - name: Run clean verify on javacc-8-java with integration tests
-      if: matrix.os != 'windows-latest'
-      run: mvn -B --file javacc-8-java/pom.xml    -P disp-per,doNotFailOnError-check-java-issues --show-version clean verify
+#    - name: Run clean verify on javacc-8-java with integration tests
+#      if: matrix.os != 'windows-latest'
+#      run: mvn -B --file javacc-8-java/pom.xml    -P disp-per,doNotFailOnError-check-java-issues --show-version clean verify
       

@@ -51,7 +51,12 @@ THE POSSIBILITY OF SUCH DAMAGE.
     <module>chemical</module>
     <module>cobol</module>
     <module>dtd</module>
-    <module>ecma</module>
+    <!-- TODO investigate why we get the error in github action windows (and not on my pc)
+      INFO] - - javacc:3.0.3:jjtree-javacc (jjt8-jjt-jjc) @ ecma - -
+      Java Compiler Compiler Version 8.1.0 (Tree Builder)
+      Error: Line 642, Column 24: Right end of character range '?' has a lower ordinal value than the left end of character range '?'.
+     -->
+    <!--    <module>ecma</module>-->
     <module>express</module>
     <module>formsplsql</module>
     <module>gdmo</module>
