@@ -97,14 +97,16 @@ jobs:
     - name: Run clean verify on javacc-8-java / integration tests
       run: mvn -B --file javacc-8-java/issues/bas01/pom.xml -Pdisp-per,doNotFailOnError-check-java-issues --show-version clean verify
       
-    - name: read output file
+    - name: read actual output file
       uses: andstor/file-reader-action@v1
       with:
          path: "/home/runner/work/javacc-8-java/javacc-8-java/javacc-8-java/issues/bas01/files/clc1.err"
       
-    - name: display file contents
-      run: echo "${ steps.read_file.outputs.contents }"
-
+    - name: read expected output file
+      uses: andstor/file-reader-action@v1
+      with:
+         path: "/home/runner/work/javacc-8-java/javacc-8-java/javacc-8-java/issues/bas01/files/clc1.exp_err"
+      
     # integration tests run directly
     - name: Run clean verify on javacc-8-java / integration tests
       run: mvn -B --file javacc-8-java/it/pom.xml -Pdisp-per --show-version clean verify
