@@ -92,11 +92,23 @@ jobs:
     - name: Run install on javacc-8-java skipping integration tests
       run: mvn -B --file javacc-8-java/pom.xml    -P!run-its  --show-version install
 
-    # integration tests run directly (no doNotFailOnError-check-java-issues)
+    # integration tests run directly (no doNotFailOnError-check-java-issues) (windows)
     - name: Run clean verify on integration tests of javacc-8-java
+      if: matrix.os == 'windows-latest'
       run: mvn -B --file javacc-8-java/it/pom.xml -P disp-per --show-version clean verify
 
-    # integration tests run through Maven Invoker Plugin
+    # integration tests run directly (with doNotFailOnError-check-java-issues) (ubuntu, macos)
+    - name: Run clean verify on integration tests of javacc-8-java
+      if: matrix.os != 'windows-latest'
+      run: mvn -B --file javacc-8-java/it/pom.xml -P disp-per,doNotFailOnError-check-java-issues --show-version clean verify
+
+    # integration tests run through Maven Invoker Plugin (no doNotFailOnError-check-java-issues) (windows)
     - name: Run clean verify on javacc-8-java with integration tests
+      if: matrix.os == 'windows-latest'
       run: mvn -B --file javacc-8-java/pom.xml    -P disp-per --show-version clean verify
+
+    # integration tests run through Maven Invoker Plugin (ubuntu, macos)
+    - name: Run clean verify on javacc-8-java with integration tests
+      if: matrix.os != 'windows-latest'
+      run: mvn -B --file javacc-8-java/pom.xml    -P disp-per,doNotFailOnError-check-java-issues --show-version clean verify
       
