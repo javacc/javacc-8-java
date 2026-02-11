@@ -102,7 +102,7 @@ jobs:
 
     # integration tests run directly
     - name: Run clean verify on javacc-8-java / integration tests
-      run: mvn clean verify -B --show-version --file javacc-8-java/src/it/pom.xml
+      run: mvn clean verify -B --show-version --file javacc-8-java/it/pom.xml
 
     # integration tests run through Maven Invoker Plugin show(ed?) problems:
     # profile no_local_java_generator_version is activated, so traces are not the expected ones
