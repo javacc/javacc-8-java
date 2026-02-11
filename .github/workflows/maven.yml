@@ -96,10 +96,12 @@ jobs:
     - name: Run clean verify on javacc-8-java / integration tests
       run: mvn -B --file javacc-8-java/it/issues/bas01/pom.xml -Pdisp-per --show-version clean verify
       
-    - name: display output file
+    - name: read output file
       uses: andstor/file-reader-action@v1
       with:
          path: "issues/bas01/files/clc1.err"
+      
+    - name: display file contents
       run: echo "${ steps.read_file.outputs.contents }"
 
     # integration tests run directly
