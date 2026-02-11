@@ -263,5 +263,59 @@ THE POSSIBILITY OF SUCH DAMAGE.
       </build>
     </profile>
 
+    <profile>
+      <!-- for debugging on different environments
+         needs explicit activation -->
+      <id>disp-per</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>display-props</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <echoproperties />
+                  </target>
+                </configuration>
+              </execution>
+              <execution>
+                <id>display-env</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <property environment="env" />
+                    <echoproperties prefix="env." />
+                  </target>
+                </configuration>
+              </execution>
+              <execution>
+                <id>display-runtime</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <property runtime="rt" />
+                    <echoproperties prefix="rt." />
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 </project>
