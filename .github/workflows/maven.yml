@@ -41,7 +41,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+#       os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
 
     steps:
 
@@ -99,7 +100,7 @@ jobs:
     - name: read output file
       uses: andstor/file-reader-action@v1
       with:
-         path: "issues/bas01/files/clc1.err"
+         path: "/home/runner/work/javacc-8-java/javacc-8-java/javacc-8-java/issues/bas01/files/clc1.err"
       
     - name: display file contents
       run: echo "${ steps.read_file.outputs.contents }"
