@@ -94,7 +94,7 @@ jobs:
 
     # integration test bas01 run directly
     - name: Run clean verify on javacc-8-java / integration tests
-      run: mvn -B --file javacc-8-java/it/issues/bas01/pom.xml -Pdisp-per,doNotFailOnError-check-java-issues --show-version clean verify
+      run: mvn -B --file javacc-8-java/issues/bas01/pom.xml -Pdisp-per,doNotFailOnError-check-java-issues --show-version clean verify
       
     - name: read output file
       uses: andstor/file-reader-action@v1
