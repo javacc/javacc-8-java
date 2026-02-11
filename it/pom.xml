@@ -54,9 +54,16 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
   <!--
        ment to be called by maven-invoker-plugin from javacc-8-java/pom.xml,
+       or directly from the command line (hence the modules)
        note: parent is javacc-8/pom.xml, not javacc-8-java/pom.xml
        defines non herited settings (help) and specific settings (codeGenerator, profiles)
   -->
+
+  <modules>
+    <module>../issues</module>
+    <module>../examples</module>
+    <module>../grammars</module>
+  </modules>
 
   <build>
 
