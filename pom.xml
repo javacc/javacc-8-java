@@ -34,8 +34,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-  <groupId>org.javacc</groupId>
-  <artifactId>base</artifactId>
+    <groupId>org.javacc</groupId>
+    <artifactId>base</artifactId>
     <version>8.1.0</version>
   </parent>
 
@@ -88,9 +88,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
     </dependency>
   </dependencies>
 
-  <!-- src/main/util is not part of the distribution (may be one day);
-        it is meant to be used directly on the command line-->
-
   <!-- run 'mvn -Psnapshot,release -DshowAllPhases=true buildplan:list buildplan:list-phases'
              to list the project/module build plan -->
 
@@ -106,6 +103,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
       </activation>
       <build>
         <plugins>
+
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-invoker-plugin</artifactId>
@@ -113,6 +111,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <configuration>
               <!-- install conf: see
               https://maven.apache.org/plugins/maven-invoker-plugin/install-mojo.html-->
+              <!-- projects are not cloned, to keep the /it/build-utils.xml relative path ok -->
               <localRepositoryPath>${project.basedir}/it/local-repo</localRepositoryPath>
               <!-- run conf: see
               https://maven.apache.org/plugins/maven-invoker-plugin/run-mojo.html#invokerPropertiesFile-->
@@ -142,6 +141,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
                   <skipInvocation>${skip.it.java.issues}</skipInvocation>
                   <ignoreFailures>ignoreFailures.java.issues</ignoreFailures>
                   <projectsDirectory>issues</projectsDirectory>
+                  <invokerTest>bas01,bas02,issue-7-#1</invokerTest>
                 </configuration>
               </execution>
 
@@ -154,7 +154,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
                   <skipInvocation>${skip.it.java.examples}</skipInvocation>
                   <ignoreFailures>ignoreFailures.java.examples</ignoreFailures>
                   <projectsDirectory>examples</projectsDirectory>
-                </configuration>
+                   <invokerTest>CORBA-IDL, CustomTemplate, GUIParsing, Gwt, Interpreter, JavaCC, JJTree, MailProcessing, Lookahead, Obfuscator, Simple, Transformer, VTransformer</invokerTest>
+               </configuration>
               </execution>
 
               <execution>
@@ -166,12 +167,13 @@ THE POSSIBILITY OF SUCH DAMAGE.
                   <skipInvocation>${skip.it.java.grammars}</skipInvocation>
                   <ignoreFailures>ignoreFailures.java.grammars</ignoreFailures>
                   <projectsDirectory>grammars</projectsDirectory>
-                  <invokerTest>!ecma,!infosapient,!javacc,!petal,!rtf,!sql</invokerTest>
+                  <invokerTest>asn1, c, chemical, cobol, dtd, express, formsplsql, gdmo, idl, java, json, oberon, php, plsql</invokerTest>
                 </configuration>
               </execution>
 
             </executions>
           </plugin>
+
         </plugins>
       </build>
     </profile>
