@@ -76,7 +76,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '11'
-        cache: 'maven'
 
     # JDK 8 found on ubuntu
     - name: Set up JDK 8 for ubuntu
@@ -85,7 +84,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '8'
-        cache: 'maven'
 
     # JDK 8 & 11 not found on windows
     - name: Set up JDK 17 for windows
@@ -94,14 +92,13 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
-        cache: 'maven'
 
     - name: Cache Maven packages
       uses: actions/cache@v4
       with:
          path: ~/.m2
-         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-         restore-keys: ${{ runner.os }}-m2
+         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+         restore-keys: ${{ runner.os }}-maven-
 
     # -B: batch mode; -e: produce execution error messages;
     # -X: debug mode; -N: non-recursive (don't build submodules)
