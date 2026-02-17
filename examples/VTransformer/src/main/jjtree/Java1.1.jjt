@@ -31,6 +31,9 @@ options {
   JAVA_UNICODE_ESCAPE = true;
 
   STATIC=false;
+
+  SINGLE_TREE_FILE = false; // as some node files are customized
+  
   MULTI=true;
   VISITOR=true;
   NODE_USES_PARSER=true;
