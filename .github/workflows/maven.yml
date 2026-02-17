@@ -83,7 +83,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '11'
-        cache:        'maven'
 
     # JDK 8 found on ubuntu
     - name: Set up JDK 8 for ubuntu
@@ -92,7 +91,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '8'
-        cache:        'maven'
 
     # JDK 8 & 11 not found on windows
     - name: Set up JDK 17 for windows
@@ -101,7 +99,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
-        cache:        'maven'
 
     # -B: batch mode; -e: produce execution error messages;
     # -X: debug mode; -N: non-recursive (don't build submodules)
