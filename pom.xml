@@ -111,7 +111,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <configuration>
               <!-- install conf: see
               https://maven.apache.org/plugins/maven-invoker-plugin/install-mojo.html-->
-              <!-- projects are not cloned, to keep the /it/build-utils.xml relative path ok -->
               <localRepositoryPath>${project.basedir}/it/local-repo</localRepositoryPath>
               <!-- run conf: see
               https://maven.apache.org/plugins/maven-invoker-plugin/run-mojo.html#invokerPropertiesFile-->

@@ -31,6 +31,8 @@ options
 {
   STATIC = false;
 
+  SINGLE_TREE_FILE = false; // as some node files are customized
+  
   MULTI = true;
   NODE_DEFAULT_VOID = true;
   NODE_PACKAGE = "eg4";

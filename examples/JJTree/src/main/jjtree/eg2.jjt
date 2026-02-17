@@ -30,6 +30,8 @@
 options
 {
   KEEP_LINE_COLUMN = false;
+
+  SINGLE_TREE_FILE = false; // as some node files are customized
   
   MULTI = true;
   NODE_PACKAGE = "eg2";

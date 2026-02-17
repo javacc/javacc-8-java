@@ -36,7 +36,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
   <parent>
     <groupId>org.javacc</groupId>
     <artifactId>base</artifactId>
-    <version>8.1.0</version>
+    <version>8.1.1-SNAPSHOT</version>
     <relativePath></relativePath>
   </parent>
 
@@ -47,9 +47,10 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
   <name>JavaCC Java code generator / it</name>
 
-  <!-- temp, overriding base -->
   <properties>
-    <maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
+    <!-- temp, overriding base -->
+    <!--    <maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>-->
+    <javacc-maven-plugin.version>3.8.0</javacc-maven-plugin.version>
   </properties>
 
   <!--
@@ -96,9 +97,22 @@ THE POSSIBILITY OF SUCH DAMAGE.
       <plugin>
         <groupId>org.javacc.plugin</groupId>
         <artifactId>javacc-maven-plugin</artifactId>
-        <configuration>
-          <codeGenerator>java</codeGenerator>
-        </configuration>
+                <!-- v3.0.3-->
+<!--        <configuration>-->
+<!--          <codeGenerator>java</codeGenerator>-->
+<!--        </configuration>-->
+                <!-- v3.8.0 -->
+                <configuration>
+                  <javaccCmdLineArgs>
+                    <gen>-CODE_GENERATOR="Java"</gen>
+                  </javaccCmdLineArgs>
+                  <jjtreeCmdLineArgs>
+                    <gen>-CODE_GENERATOR="Java"</gen>
+                  </jjtreeCmdLineArgs>
+                  <jtbCmdLineArgs>
+                    <gen>-CODE_GENERATOR="Java"</gen>
+                  </jtbCmdLineArgs>
+                </configuration>
       </plugin>
 
     </plugins>
@@ -126,11 +140,26 @@ THE POSSIBILITY OF SUCH DAMAGE.
                 <goals>
                   <goal>jjtree-javacc</goal>
                 </goals>
+                <!-- v3.0.3-->
+                <!--                <configuration>-->
+                <!--                  <sourceDirectory>src/main/jjtree</sourceDirectory>-->
+                <!--                  <interimDirectory>target/generated-sources/jjtree</interimDirectory>-->
+                <!--                  <outputDirectory>target/generated-sources/java</outputDirectory>-->
+                <!--                  <nodeDirectory>src/main/java</nodeDirectory>-->
+                <!--                </configuration>-->
+                <!-- v3.8.0 -->
                 <configuration>
-                  <sourceDirectory>src/main/jjtree</sourceDirectory>
-                  <interimDirectory>target/generated-sources/jjtree</interimDirectory>
-                  <outputDirectory>target/generated-sources/java</outputDirectory>
-                  <nodeDirectory>src/main/java</nodeDirectory>
+                  <javaccCmdLineArgs>
+                    <enc>-GRAMMAR_ENCODING="UTF-8"</enc>
+                    <jjod>-OUTPUT_DIRECTORY="${project.build.directory}/generated-sources/javacc"</jjod>
+                  </javaccCmdLineArgs>
+                  <jjtreeCmdLineArgs>
+                    <jjtod>
+                      -JJTREE_OUTPUT_DIRECTORY="${project.build.directory}/generated-sources/jjtree"</jjtod>
+                  </jjtreeCmdLineArgs>
+                  <jtbCmdLineArgs>
+                    <jtbod>-d="${project.build.directory}/generated-sources/jtb"</jtbod>
+                  </jtbCmdLineArgs>
                 </configuration>
               </execution>
             </executions>
@@ -159,10 +188,11 @@ THE POSSIBILITY OF SUCH DAMAGE.
                 <goals>
                   <goal>javacc</goal>
                 </goals>
-                <configuration>
-                  <sourceDirectory>src/main/javacc</sourceDirectory>
-                  <outputDirectory>target/generated-sources/java</outputDirectory>
-                </configuration>
+                <!-- v3.0.3-->
+<!--                <configuration>-->
+<!--                  <sourceDirectory>src/main/javacc</sourceDirectory>-->
+<!--                  <outputDirectory>target/generated-sources/java</outputDirectory>-->
+<!--                </configuration>-->
               </execution>
             </executions>
           </plugin>
@@ -205,9 +235,10 @@ THE POSSIBILITY OF SUCH DAMAGE.
                 <goals>
                   <goal>jjtree-javacc</goal>
                 </goals>
-                <configuration>
-                  <outputDirectory>target/generated-sources/java</outputDirectory>
-                </configuration>
+                <!-- v3.0.3-->
+<!--                <configuration>-->
+<!--                  <outputDirectory>target/generated-sources/java</outputDirectory>-->
+<!--                </configuration>-->
               </execution>
             </executions>
           </plugin>
@@ -253,9 +284,10 @@ THE POSSIBILITY OF SUCH DAMAGE.
                 <goals>
                   <goal>javacc</goal>
                 </goals>
-                <configuration>
-                  <outputDirectory>target/generated-sources/java</outputDirectory>
-                </configuration>
+                <!-- v3.0.3-->
+<!--                <configuration>-->
+<!--                  <outputDirectory>target/generated-sources/java</outputDirectory>-->
+<!--                </configuration>-->
               </execution>
             </executions>
           </plugin>
@@ -265,7 +297,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
     <profile>
       <!-- for debugging on different environments
-         needs explicit activation -->
+           needs explicit activation -->
       <id>disp-per</id>
       <build>
         <plugins>
