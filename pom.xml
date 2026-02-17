@@ -36,7 +36,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
   <parent>
     <groupId>org.javacc</groupId>
     <artifactId>base</artifactId>
-    <version>8.1.0</version>
+    <version>8.1.1-SNAPSHOT</version>
   </parent>
 
   <groupId>org.javacc.generator</groupId>
