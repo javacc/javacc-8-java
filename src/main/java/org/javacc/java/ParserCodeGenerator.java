@@ -874,7 +874,6 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
       cb.println("  }");
       cb.println();
 
-      cb.println("  private static final boolean DBG_EXP = false;");
       cb.println();
 
       if (context.globals().jj2index != 0) {
@@ -909,18 +908,6 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
           cb.print(", final String loc");
         }
         cb.println(") {");
-        cb.println("    if (DBG_EXP) System.out.println(\"scan1: kind = \" + kind +");
-        if (Options.getErrorReporting()) {
-          cb.println("         \", loc = \" + loc +");
-        }
-        cb.println("         \", jj_la = \" + jj_la +");
-        cb.println("         \", jj_scanpos = \" + jj_scanpos + \" \" + jj_scanpos.hashCode() +");
-        if (Options.getErrorReporting()) {
-          cb.println("         \", jj_lastpos = \" + jj_lastpos + \" \" + jj_lastpos.hashCode() +");
-          cb.println("         \", jj_rescan = \" + jj_rescan);");
-        } else {
-          cb.println("         \", jj_lastpos = \" + jj_lastpos + \" \" + jj_lastpos.hashCode());");
-        }
         cb.println("    if (jj_scanpos == jj_lastpos) {");
         cb.println("      jj_la--;");
         cb.println("      if (jj_scanpos.next == null) {");
@@ -951,22 +938,12 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
         } else if (Options.getDebugLookahead()) {
           cb.println("    trace_scan(jj_scanpos, kind);");
         }
-        cb.println("    if (DBG_EXP) System.out.println(\"scan2: kind = \" + kind +");
-        cb.println("         \", jj_scanpos.kind = \" + jj_scanpos.kind +");
-        cb.println("         \", jj_la = \" + jj_la +");
-        cb.println("         \", jj_scanpos = \" + jj_scanpos + \" \" + jj_scanpos.hashCode() +");
-        cb.println("         \", jj_lastpos = \" + jj_lastpos + \" \" + jj_lastpos.hashCode());");
         cb.println("    if (jj_scanpos.kind != kind) {");
         cb.println("      return LA_Scan_Token_Failure;");
         cb.println("    }");
         cb.println("    if (jj_la == 0 && jj_scanpos == jj_lastpos) {");
         cb.println("      throw jj_ls;");
         cb.println("    }");
-        cb.println("    if (DBG_EXP) System.out.println(\"scan3: kind = \" + kind +");
-        cb.println("         \", jj_scanpos.kind = \" + jj_scanpos.kind +");
-        cb.println("         \", jj_la = \" + jj_la +");
-        cb.println("         \", jj_scanpos = \" + jj_scanpos + \" \" + jj_scanpos.hashCode() +");
-        cb.println("         \", jj_lastpos = \" + jj_lastpos + \" \" + jj_lastpos.hashCode());");
         cb.println("    return LA_Scan_Token_Success;");
         cb.println("  }");
         cb.println();
@@ -1043,7 +1020,7 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
         cb.println("  private " + pStatic + "int      jj_kind = -1;");
         cb.println("  private " + pStatic + "int[]    jj_expentry;");
         cb.println("  private " + pStatic + "String[] jj_expentry_loc;");
-        cb.println("  private static final int MAX_NB_POS = 100;");
+        cb.println("  private static final int MAX_NB_POS = 512;");
         if (context.globals().jj2index != 0) {
           cb.println("  private " + pStatic + "int[]    jj_lasttokens     = new int[MAX_NB_POS];");
           cb.println(
@@ -1054,25 +1031,9 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
           /* jj_add_error_token(int kind, int pos) */
           cb.println(
               "  private " + pStatic + "void jj_add_error_token(int kind, int pos, String loc) {");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet1: jj_add_error_token: kind = \" + kind +");
-          cb.println(
-              "                                    \", pos = \" + pos + \", loc = \" + loc + \", jj_endpos = \" + jj_endpos);");
           cb.println("    if (pos >= MAX_NB_POS) {");
           cb.println("     return;");
           cb.println("    }");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet1: jj_lasttokens = \" + java.util.Arrays.toString(jj_lasttokens));");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet1: jj_lasttokens_loc = \" + java.util.Arrays.toString(jj_lasttokens_loc));");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet1: jj_expentry = \" + java.util.Arrays.toString(jj_expentry));");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet1: jj_expentry_loc = \" + java.util.Arrays.toString(jj_expentry_loc));");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet1: jj_expentries = \" + java.util.Arrays.deepToString(jj_expentries.toArray()));");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet1: jj_expentries_loc = \" + java.util.Arrays.deepToString(jj_expentries_loc.toArray()));");
           cb.println("    if (pos == jj_endpos + 1) {");
           cb.println("      jj_lasttokens[jj_endpos]     = kind;");
           cb.println("      jj_lasttokens_loc[jj_endpos] = loc;");
@@ -1106,18 +1067,6 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
           cb.println("        jj_endpos = pos;");
           cb.println("      }");
           cb.println("    }");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet2: jj_lasttokens = \" + java.util.Arrays.toString(jj_lasttokens));");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet2: jj_lasttokens_loc = \" + java.util.Arrays.toString(jj_lasttokens_loc));");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet2: jj_expentry = \" + java.util.Arrays.toString(jj_expentry));");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet2: jj_expentry_loc = \" + java.util.Arrays.toString(jj_expentry_loc));");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet2: jj_expentries = \" + java.util.Arrays.deepToString(jj_expentries.toArray()));");
-          cb.println(
-              "    if (DBG_EXP) System.out.println(\"aet2: jj_expentries_loc = \" + java.util.Arrays.deepToString(jj_expentries_loc.toArray()));");
           cb.println("  }");
         }
         cb.println();
@@ -1126,20 +1075,8 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
         cb.println("  /** Generate a ParseException. */");
         cb.println(
             "  public " + pStatic + "ParseException generateParseException(final String loc) {");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe1: jj_la1 = \" + java.util.Arrays.toString(jj_la1));");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe1: jj_la1_loc = \" + java.util.Arrays.toString(jj_la1_loc));");
         cb.println("    jj_expentries.clear();");
         cb.println("    jj_expentries_loc.clear();");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe1: jj_expentry = \" + java.util.Arrays.toString(jj_expentry));");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe1: jj_expentry_loc = \" + java.util.Arrays.toString(jj_expentry_loc));");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe1: jj_expentries = \" + java.util.Arrays.deepToString(jj_expentries.toArray()));");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe1: jj_expentries_loc = \" + java.util.Arrays.deepToString(jj_expentries_loc.toArray()));");
         cb.println(
             "    final boolean[] la1tokens    = new boolean["
                 + context.globals().tokenCount
@@ -1163,10 +1100,6 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
         cb.println("        }");
         cb.println("      }");
         cb.println("    }");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe2: la1tokens = \" + java.util.Arrays.toString(la1tokens));");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe2: la1tokens_loc = \" + java.util.Arrays.toString(la1tokens_loc));");
         cb.println("    for (int k = 0; k < " + context.globals().tokenCount + "; k++) {");
         cb.println("      if (la1tokens[k]) {");
         cb.println("        jj_expentry     = new int[1];");
@@ -1177,14 +1110,6 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
         cb.println("        jj_expentries_loc.add(jj_expentry_loc);");
         cb.println("      }");
         cb.println("    }");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe3: jj_expentry = \" + java.util.Arrays.toString(jj_expentry));");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe3: jj_expentry_loc = \" + java.util.Arrays.toString(jj_expentry_loc));");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe3: jj_expentries = \" + java.util.Arrays.deepToString(jj_expentries.toArray()));");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe3: jj_expentries_loc = \" + java.util.Arrays.deepToString(jj_expentries_loc.toArray()));");
         if (context.globals().jj2index != 0) {
           cb.println("    jj_endpos = 0;");
           cb.println("    jj_rescan_token();");
@@ -1200,10 +1125,6 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
         cb.println("      exptokseqloc[x] = jj_expentries_loc.get(x);");
         //        }
         cb.println("    }");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe4: exptokseq = \" + java.util.Arrays.deepToString(exptokseq));");
-        cb.println(
-            "    if (DBG_EXP) System.out.println(\"gpe4: exptokseqloc = \" + java.util.Arrays.deepToString(exptokseqloc));");
         if (isJavaModernMode) {
           cb.println(
               "    return new ParseException(token, exptokseq, exptokseqloc, tokenImage, loc, ");
@@ -1255,7 +1176,6 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
                 + JavaTemplates.getTokenMgrErrorClass()
                 + ".addEscapes(t.image) + \"\\\"\";");
         cb.println("    }");
-        cb.println("    if (DBG_EXP) s += \" / \" + t.hashCode();");
         cb.println("    s += \">\";");
         cb.println("    return s;");
         cb.println("  }");
