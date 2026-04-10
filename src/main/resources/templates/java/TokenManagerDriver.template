@@ -492,10 +492,15 @@ ${decls}
     // Some NFA states have epsilon transitions (move on empty string).
     // So we just start with all of them. Note that the nextStates array already adds
     // the epsilon closure. Only the initial state needs to do this explicitly.
-    for (int s : jjcompositeState_row(startState)) {
-      if (moved[s] != moveIndex) {
-        stateSet[cnt++] = s;
-        moved[s] = moveIndex;
+    {
+      final int _csOff = jjcompositeState_offsets[startState];
+      final int _csLen = jjcompositeState_lengths[startState];
+      for (int _j = 0; _j < _csLen; _j++) {
+        final int s = jjcompositeState_data[_csOff + _j];
+        if (moved[s] != moveIndex) {
+          stateSet[cnt++] = s;
+          moved[s] = moveIndex;
+        }
       }
     }
 
@@ -534,11 +539,16 @@ ${decls}
         if ((jjChars[state][vectorIndex] & bitpattern) != 0L) {
           // Current input character can move this NFA state.
           // So add all the next states of the current states for use with the next input char.
-          for (int newState : jjnextStateSet_row(state)) {
-            if (moved[newState] != moveIndex) {
-              // We add each state only once.
-              newStateSet[newCnt++] = newState;
-              moved[newState] = moveIndex;
+          {
+            final int _nsOff = jjnextStateSet_offsets[state];
+            final int _nsLen = jjnextStateSet_lengths[state];
+            for (int _k = 0; _k < _nsLen; _k++) {
+              final int newState = jjnextStateSet_data[_nsOff + _k];
+              if (moved[newState] != moveIndex) {
+                // We add each state only once.
+                newStateSet[newCnt++] = newState;
+                moved[newState] = moveIndex;
+              }
             }
           }
           int newKind = jjmatchKinds[state];
