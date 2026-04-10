@@ -2377,6 +2377,10 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
     cb.println("    try {");
     NormalProduction prod = null;
 
+    final String saveCall = Options.getErrorReporting()
+        ? "      jj_save(" + (Integer.parseInt(internalNames.get(e).substring(1)) - 1) + ", xla);"
+        : null;
+
     if (Options.getDebugLookahead()) {
       // parent null for a top level lookahead expansion,
       //  need to go through the lookahead itself (with mod in grammar)
@@ -2393,11 +2397,24 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
               + " LOOKAHEAD (\" + xla + \"/\" + jj_la + \") "
               + fmtAt(e, prod)
               + "\");");
+      if (saveCall != null) {
+        cb.println("      if (rc) {");
+        cb.println(saveCall);
+        cb.println("      }");
+      }
       cb.println("      return (!rc);");
 
     } else {
       // no DebugLookahead
-      cb.println("      return (!jj_3" + internalNames.get(e) + "()" + ret_suffix + ");");
+      if (saveCall != null) {
+        cb.println("      final boolean _la_failed = jj_3" + internalNames.get(e) + "()" + ret_suffix + ";");
+        cb.println("      if (_la_failed) {");
+        cb.println(saveCall);
+        cb.println("      }");
+        cb.println("      return !_la_failed;");
+      } else {
+        cb.println("      return (!jj_3" + internalNames.get(e) + "()" + ret_suffix + ");");
+      }
     }
 
     cb.println("    } catch (LookaheadSuccess ls) {");
@@ -2408,11 +2425,6 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
               + "\");");
     }
     cb.println("      return LA_Phase2_Success;");
-    if (Options.getErrorReporting()) {
-      cb.println("    } finally {");
-      cb.println(
-          "      jj_save(" + (Integer.parseInt(internalNames.get(e).substring(1)) - 1) + ", xla);");
-    }
     cb.println("    }");
     cb.println("  }");
     cb.println();
