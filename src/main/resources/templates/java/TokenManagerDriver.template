@@ -350,12 +350,8 @@ ${decls}
     }
 #if TOKEN_FACTORY
     final Token t = ${TOKEN_FACTORY}.newToken(jjmatchedKind, curTokenImage);
-#elif BINARY_NEW_TOKEN
-    final Token t = Token.newToken(jjmatchedKind, curTokenImage);
 #else
-    final Token t = Token.newToken(jjmatchedKind);
-    t.kind = jjmatchedKind;
-    t.image = curTokenImage;
+    final Token t = Token.newToken(jjmatchedKind, curTokenImage);
 #fi
 #if KEEP_LINE_COLUMN
     t.beginLine = beginLine;
