@@ -367,10 +367,10 @@ ${decls}
     int curPos = 0;
     int key = (int) curLexState << 16 | curChar;
     int startState = jjInitStates[curLexState];
-    if (startAndSize.containsKey(key)) {
-      int[] arr = startAndSize.get(key);
-      int index = arr[0];
-      for (int i = 0; i < arr[1]; i++) {
+    int _ssPos = java.util.Arrays.binarySearch(ssKeys, key);
+    if (_ssPos >= 0) {
+      int index = ssValues[_ssPos * 2];
+      for (int i = 0; i < ssValues[_ssPos * 2 + 1]; i++) {
         int len = stringLiterals[index++];
         int ignoreCase = stringLiterals[index++];
 #if DEBUG_TOKEN_MANAGER

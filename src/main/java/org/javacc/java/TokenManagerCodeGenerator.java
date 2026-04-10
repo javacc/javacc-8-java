@@ -128,7 +128,7 @@ class TokenManagerCodeGenerator implements org.javacc.parser.TokenManagerCodeGen
 
             jcb.println("  static {");
             if (!Options.getNoDfa()) {
-                jcb.println("    InitStartAndSize();");
+                // ssKeys/ssValues are static final arrays; no init needed
             }
             jcb.println("    initJjChars();");
             jcb.println("  }");
@@ -155,58 +155,65 @@ class TokenManagerCodeGenerator implements org.javacc.parser.TokenManagerCodeGen
 
     private static void dumpDfaTables(final JavaCodeBuilder jcb, final TokenizerData tokenizerData) {
         /* stringLiterals — collect into int[], emit via init method to avoid <clinit> overflow. */
-        final List<Integer> slData = new ArrayList<>();
-        final Map<Integer, int[]> startAndSize = new HashMap<>();
+        // Pre-calculate total size to avoid boxing overhead from List<Integer>.
+        int totalSize = 0;
+        for (final int key : tokenizerData.literalSequence.keySet()) {
+            final List<String> l = tokenizerData.literalSequence.get(key);
+            final List<Integer> kinds = tokenizerData.literalKinds.get(key);
+            int j = 0;
+            for (final String s : l) {
+                final int kind = kinds.get(j);
+                final boolean ignoreCase = tokenizerData.ignoreCaseKinds.contains(kind);
+                // length + ignoreCase flag + chars + (uppercased chars if ignoreCase) + kind + nfaStartState
+                totalSize += 2 + s.length() + (ignoreCase ? s.length() : 0) + 2;
+                j++;
+            }
+        }
+        final int[] slData = new int[totalSize];
+        int slPos = 0;
+        final Map<Integer, int[]> startAndSize = new HashMap<>(tokenizerData.literalSequence.size() * 4 / 3 + 1);
         for (final int key : tokenizerData.literalSequence.keySet()) {
             final int[] arr = new int[2];
             final List<String> l = tokenizerData.literalSequence.get(key);
             final List<Integer> kinds = tokenizerData.literalKinds.get(key);
-            arr[0] = slData.size();
+            arr[0] = slPos;
             arr[1] = l.size();
             int j = 0;
             for (final String s : l) {
                 final int kind = kinds.get(j);
                 final boolean ignoreCase = tokenizerData.ignoreCaseKinds.contains(kind);
-                slData.add(s.length());
-                slData.add(ignoreCase ? 1 : 0);
+                slData[slPos++] = s.length();
+                slData[slPos++] = ignoreCase ? 1 : 0;
                 for (int k = 0; k < s.length(); k++) {
-                    slData.add((int) s.charAt(k));
+                    slData[slPos++] = s.charAt(k);
                 }
                 if (ignoreCase) {
-                    for (int k = 0; k < s.length(); k++) {
-                        slData.add((int) s.toUpperCase().charAt(k));
+                    final String upper = s.toUpperCase();
+                    for (int k = 0; k < upper.length(); k++) {
+                        slData[slPos++] = upper.charAt(k);
                     }
                 }
-                slData.add(kind);
-                slData.add(tokenizerData.kindToNfaStartState.get(kind));
+                slData[slPos++] = kind;
+                slData[slPos++] = tokenizerData.kindToNfaStartState.get(kind);
                 j++;
             }
             startAndSize.put(key, arr);
         }
-        final int[] stringLiteralsArr = new int[slData.size()];
-        for (int idx = 0; idx < slData.size(); idx++) {
-            stringLiteralsArr[idx] = slData.get(idx);
-        }
-        JavaArrayHelper.emitIntArray(jcb, "  ", "private", "stringLiterals", stringLiteralsArr);
+        JavaArrayHelper.emitIntArray(jcb, "  ", "private", "stringLiterals", slData);
 
-        /* startAndSize. */
-        jcb.println("  private static final java.util.Map<Integer, int[]> startAndSize =");
-        jcb.println("      new java.util.HashMap<Integer, int[]>();");
-        jcb.println();
-
-        /* InitStartAndSize. */
-        jcb.println("  // format of \"startAndSize.put(k, new int[] {ix, sz})\":");
-        jcb.println(
-            "  // k: key of map of lists of literals starting by char 'c', indexed by ((LexicalState << 16 | (int) c)"
-        );
-        jcb.println("  // ix: index (list's start in stringLiterals)");
-        jcb.println("  // sz: list's size");
-        jcb.println("  private static void InitStartAndSize() {");
-        for (final int key : tokenizerData.literalSequence.keySet()) {
-            final int[] arr = startAndSize.get(key);
-            jcb.println("    startAndSize.put(" + key + ", new int[] {" + arr[0] + ", " + arr[1] + "});");
+        /* startAndSize — sorted parallel arrays for binary-search lookup (no autoboxing). */
+        final List<Integer> sortedKeys = new ArrayList<>(startAndSize.keySet());
+        java.util.Collections.sort(sortedKeys);
+        final int[] ssKeysArr = new int[sortedKeys.size()];
+        final int[] ssValuesArr = new int[sortedKeys.size() * 2];
+        for (int idx = 0; idx < sortedKeys.size(); idx++) {
+            ssKeysArr[idx] = sortedKeys.get(idx);
+            final int[] v = startAndSize.get(sortedKeys.get(idx));
+            ssValuesArr[idx * 2] = v[0];
+            ssValuesArr[idx * 2 + 1] = v[1];
         }
-        jcb.println("  }");
+        JavaArrayHelper.emitIntArray(jcb, "  ", "private", "ssKeys", ssKeysArr);
+        JavaArrayHelper.emitIntArray(jcb, "  ", "private", "ssValues", ssValuesArr);
         jcb.println();
     }
 
@@ -279,8 +286,8 @@ class TokenManagerCodeGenerator implements org.javacc.parser.TokenManagerCodeGen
 
         /* jjCharData into a buffer. */
         final Map<Integer, TokenizerData.NfaState> nfa = tokenizerData.nfa;
-        final Map<String, String> charDataVars = new HashMap<String, String>();
-        final Map<String, String> charDataCdbs = new HashMap<String, String>();
+        final Map<String, String> charDataVars = new HashMap<>();
+        final Map<String, String> charDataCdbs = new HashMap<>();
 
         final StringBuilder sb = new StringBuilder(64 + 18 * nfa.size());
         sb.append("    private static final long[][] jjCharData = {");
@@ -413,6 +420,7 @@ class TokenManagerCodeGenerator implements org.javacc.parser.TokenManagerCodeGen
 
         /* jjstrLiteralImages — collect into String[], emit via init method. */
         final String[] literalImages = new String[allMatches.size()];
+        final StringBuilder imgBuilder = new StringBuilder(32);
         for (int i = 0; i < allMatches.size(); i++) {
             final TokenizerData.MatchInfo matchInfo = allMatches.get(i);
             switch (matchInfo.matchType) {
@@ -432,7 +440,8 @@ class TokenManagerCodeGenerator implements org.javacc.parser.TokenManagerCodeGen
             newStates[i] = matchInfo.newLexState;
             final String image = matchInfo.image;
             if (image != null) {
-                final StringBuilder imgBuilder = new StringBuilder("\"");
+                imgBuilder.setLength(0);
+                imgBuilder.append('"');
                 for (int j = 0; j < image.length(); j++) {
                     final int cj = image.charAt(j);
                     switch (cj) {
