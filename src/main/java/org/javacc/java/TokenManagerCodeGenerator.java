@@ -218,60 +218,29 @@ class TokenManagerCodeGenerator implements org.javacc.parser.TokenManagerCodeGen
     }
 
     private static void dumpNfaTables(final JavaCodeBuilder jcb, final TokenizerData tokenizerData) {
-        /* canMatchAnyChar. */
-        jcb.print("  private static final int[] canMatchAnyChar = {");
-        int v = 0;
-        for (int i = 0; i < tokenizerData.wildcardKind.size(); i++) {
-            if (v++ > 0) {
-                jcb.print(", ");
-            } else {
-                jcb.println();
-                jcb.print("    ");
+        /* canMatchAnyChar — emit via init method for clinit safety. */
+        {
+            final int[] arr = new int[tokenizerData.wildcardKind.size()];
+            for (int i = 0; i < arr.length; i++) {
+                arr[i] = tokenizerData.wildcardKind.get(i);
             }
-            jcb.print(tokenizerData.wildcardKind.get(i));
+            JavaArrayHelper.emitIntArray(jcb, "  ", "private", "canMatchAnyChar", arr);
         }
-        if (!tokenizerData.wildcardKind.isEmpty()) {
-            jcb.println();
-            jcb.println("  };");
-        } else {
-            jcb.println("};");
-        }
-        jcb.println();
 
-        /* jjInitStates. */
-        jcb.print("  private static final int[] jjInitStates = {");
-        v = 0;
-        for (final int i : tokenizerData.initialStates.keySet()) {
-            if (v++ > 0) {
-                jcb.print(", ");
-            } else {
-                jcb.println();
-                jcb.print("    ");
+        /* jjInitStates — emit via init method. */
+        {
+            final int[] keys = tokenizerData.initialStates.keySet().stream()
+                    .mapToInt(Integer::intValue).toArray();
+            final int[] arr = new int[keys.length];
+            for (int i = 0; i < keys.length; i++) {
+                arr[i] = tokenizerData.initialStates.get(keys[i]);
             }
-            jcb.print(tokenizerData.initialStates.get(i));
+            JavaArrayHelper.emitIntArray(jcb, "  ", "private", "jjInitStates", arr);
         }
-        if (!tokenizerData.initialStates.isEmpty()) {
-            jcb.println();
-            jcb.println("  };");
-        } else {
-            jcb.println("};");
-        }
-        jcb.println();
 
-        /* jjInitialMatchForLexState. */
-        jcb.print("  private static final int[] jjInitialMatchForLexState = {");
-        v = 0;
-        for (int i = 0; i < tokenizerData.lexStateNames.length; i++) {
-            if (v++ > 0) {
-                jcb.print(", ");
-            } else {
-                jcb.println();
-                jcb.print("    ");
-            }
-            jcb.print(tokenizerData.initialMatchForLexState[i]);
-        }
-        jcb.println("};");
-        jcb.println();
+        /* jjInitialMatchForLexState — emit via init method. */
+        JavaArrayHelper.emitIntArray(jcb, "  ", "private", "jjInitialMatchForLexState",
+                tokenizerData.initialMatchForLexState);
 
         // We do the following for Java so that the generated code is reasonable
         // size and can be compiled. May not be needed for other languages.
@@ -342,15 +311,50 @@ class TokenManagerCodeGenerator implements org.javacc.parser.TokenManagerCodeGen
             sb.append("  };").append(EOL);
         }
 
-        // in order, for easier comparison with C# & C++
+        // Emit CHAR_DATA_N arrays via init methods to prevent CharDataConsts.<clinit> overflow.
+        // Each long literal compiles to ~12 bytes of bytecode; large Unicode character classes
+        // (like CHAR_DATA27/28/31 in full-Unicode grammars) can have 500+ RLE pairs, and with
+        // 70+ unique arrays the combined clinit easily exceeds 64KB.
+        final int CHAR_DATA_INLINE_LIMIT = 100; // elements; above this → init method
         for (int k = 1; k <= charDataCdbs.size(); k++) {
             final String key = charDataVarPrefix + Integer.toString(k);
-            jcb.println("    private static final long[] " + key + " = " + charDataCdbs.get(key) + ";");
+            final String initExpr = charDataCdbs.get(key); // e.g. "new long[] {1, 4294977024L}"
+            // Count elements to decide inline vs init method
+            final int commaCount = initExpr.length() - initExpr.replace(",", "").length();
+            final int elemCount = commaCount + 1; // rough count of array elements
+            if (elemCount <= CHAR_DATA_INLINE_LIMIT) {
+                // Small array — keep inline (original behavior)
+                jcb.println("    private static final long[] " + key + " = " + initExpr + ";");
+            } else {
+                // Large array — wrap in init method to keep out of <clinit>
+                jcb.println("    private static final long[] " + key + " = " + key + "_init();");
+                jcb.println("    private static long[] " + key + "_init() {");
+                jcb.println("      return " + initExpr + ";");
+                jcb.println("    }");
+            }
         }
         jcb.println();
 
-        // now print jjCharData buffer
-        jcb.println(sb);
+        // Emit jjCharData reference array via init method when large.
+        // The StringBuilder 'sb' contains the full "private static final long[][] jjCharData = { ... };"
+        // declaration. For large NFA state counts (641+ states), this reference array alone
+        // contributes ~5KB+ to <clinit>. Wrap in init method for safety.
+        if (nfa.size() > 500) {
+            // Replace inline declaration with init method
+            String jjCharDataDecl = sb.toString();
+            // Change "private static final long[][] jjCharData = {" to return statement
+            jjCharDataDecl = jjCharDataDecl.replace(
+                    "private static final long[][] jjCharData = {",
+                    "private static final long[][] jjCharData = jjCharData_init();"
+                    + EOL + "    private static long[][] jjCharData_init() {"
+                    + EOL + "      return new long[][] {");
+            // Close the init method after the array
+            jjCharDataDecl = jjCharDataDecl.replace("};", "};" + EOL + "    }");
+            jcb.println(jjCharDataDecl);
+        } else {
+            // Small enough — original inline behavior
+            jcb.println(sb);
+        }
 
         /* end class CharDataConsts. */
         jcb.println("  }");
@@ -570,17 +574,6 @@ class TokenManagerCodeGenerator implements org.javacc.parser.TokenManagerCodeGen
     }
 
     private static void generateBitVector(final JavaCodeBuilder jcb, final String name, final BitSet bits) {
-        jcb.println();
-        jcb.println("  private static final long[] " + name + " = {");
-        final long[] longs = bits.toLongArray();
-        for (int i = 0; i < longs.length; i++) {
-            if (i > 0) {
-                jcb.print(",");
-            }
-            // codeGenerator.genCode("0x" + Long.toHexString(longs[i]) + "L");
-            jcb.print("    " + Long.toString(longs[i]) + "L");
-        }
-        jcb.println();
-        jcb.println("  };");
+        JavaArrayHelper.emitLongArray(jcb, "  ", "private", name, bits.toLongArray());
     }
 }

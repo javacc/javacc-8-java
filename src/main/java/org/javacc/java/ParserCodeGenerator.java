@@ -97,6 +97,26 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
 
   private GenericCodeBuilder cb;
 
+  /*
+   * Safety thresholds to prevent generated methods from exceeding
+   * the JVM's 64KB bytecode limit per method.
+   *
+   * Each int literal in an array init compiles to ~7 bytes of bytecode.
+   * Each switch case compiles to ~25 bytes.
+   * Each nested if-else in a Choice chain compiles to ~30 bytes.
+   *
+   * With a 64KB (65535 byte) limit, these thresholds provide ~2x safety margin.
+   */
+
+  /** Max switch cases in jj_rescan_token before splitting into sub-methods. */
+  private static final int RESCAN_CHUNK_SIZE = 500;
+
+  /** Max array elements per jj_la1_init method before splitting into sub-methods. */
+  private static final int LA1_INIT_CHUNK_SIZE = 4000;
+
+  /** Max Choice alternatives in a jj_3R method before splitting into sub-methods. */
+  private static final int CHOICE_CHAIN_THRESHOLD = 1000;
+
   /**
    * To be set to true to add debug comment tags in the generated code (to ease linking it with this
    * generator), false otherwise (which should be the normal case).
@@ -265,6 +285,7 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
                 + context.globals().maskindex
                 + "];");
         final int tokenMaskSize = ((context.globals().tokenCount - 1) / 32) + 1;
+        final int maskCount = context.globals().maskVals.size();
         for (int i = 0; i < tokenMaskSize; i++) {
           cb.println("  private static int[] jj_la1_" + i + ";");
         }
@@ -275,15 +296,43 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
           cb.println("    jj_la1_init_" + i + "();");
         }
         cb.println("  }");
+
         for (int i = 0; i < tokenMaskSize; i++) {
           cb.println();
-          cb.println("  private static void jj_la1_init_" + i + "() {");
-          cb.print("    jj_la1_" + i + " = new int[] {");
-          for (final int[] tokenMask : context.globals().maskVals) {
-            cb.print("0x" + Integer.toHexString(tokenMask[i]) + ", ");
+          if (maskCount <= LA1_INIT_CHUNK_SIZE) {
+            // Small enough — original single-method behavior
+            cb.println("  private static void jj_la1_init_" + i + "() {");
+            cb.print("    jj_la1_" + i + " = new int[] {");
+            for (final int[] tokenMask : context.globals().maskVals) {
+              cb.print("0x" + Integer.toHexString(tokenMask[i]) + ", ");
+            }
+            cb.println("};");
+            cb.println("  }");
+          } else {
+            // Split: allocate array in main method, fill in chunk sub-methods
+            final int numChunks = (maskCount + LA1_INIT_CHUNK_SIZE - 1) / LA1_INIT_CHUNK_SIZE;
+            cb.println("  private static void jj_la1_init_" + i + "() {");
+            cb.println("    jj_la1_" + i + " = new int[" + maskCount + "];");
+            for (int chunk = 0; chunk < numChunks; chunk++) {
+              cb.println("    jj_la1_init_" + i + "_chunk_" + chunk + "(jj_la1_" + i + ");");
+            }
+            cb.println("  }");
+
+            // Generate chunk sub-methods
+            final List<int[]> maskVals = context.globals().maskVals;
+            for (int chunk = 0; chunk < numChunks; chunk++) {
+              final int lo = chunk * LA1_INIT_CHUNK_SIZE;
+              final int hi = Math.min(lo + LA1_INIT_CHUNK_SIZE, maskCount);
+              cb.println();
+              cb.println("  private static void jj_la1_init_" + i + "_chunk_" + chunk
+                  + "(final int[] a) {");
+              for (int j = lo; j < hi; j++) {
+                cb.println("    a[" + j + "] = 0x"
+                    + Integer.toHexString(maskVals.get(j)[i]) + ";");
+              }
+              cb.println("  }");
+            }
           }
-          cb.println("};");
-          cb.println("  }");
         }
       }
       if ((context.globals().jj2index != 0) && Options.getErrorReporting()) {
@@ -1362,26 +1411,47 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
       } // end else if (Options.getDebugLookahead())
 
       if ((context.globals().jj2index != 0) && Options.getErrorReporting()) {
+        final int jj2cnt = context.globals().jj2index;
         cb.println(
             "  /** When and for reporting error, rescans tokens (rerun phase 3 routines), to build ad-hoc info. */");
         cb.println("  private " + pStatic + "void jj_rescan_token() {");
         cb.println("    jj_rescan = true;");
-        cb.println("    for (int i = 0; i < " + context.globals().jj2index + "; i++) {");
+        cb.println("    for (int i = 0; i < " + jj2cnt + "; i++) {");
         cb.println("      try {");
         cb.println("        JJCalls p = jj_2_rtns[i];");
         cb.println("        do {");
         cb.println("          if (p.gen > jj_gen) {");
         cb.println("            jj_la = p.arg;");
         cb.println("            jj_lastpos = jj_scanpos = p.first;");
-        cb.println("            switch (i) {");
-        for (int i = 0; i < context.globals().jj2index; i++) {
-          cb.println("              case " + i + ":");
-          cb.println("                jj_3_" + (i + 1) + "();");
+
+        if (jj2cnt <= RESCAN_CHUNK_SIZE) {
+          // Small enough for a single switch — original behavior
+          cb.println("            switch (i) {");
+          for (int i = 0; i < jj2cnt; i++) {
+            cb.println("              case " + i + ":");
+            cb.println("                jj_3_" + (i + 1) + "();");
+            cb.println("                break;");
+          }
+          cb.println("              default:");
           cb.println("                break;");
+          cb.println("            }");
+        } else {
+          // Split into chunk sub-methods to stay under 64KB bytecode per method
+          final int numChunks = (jj2cnt + RESCAN_CHUNK_SIZE - 1) / RESCAN_CHUNK_SIZE;
+          for (int chunk = 0; chunk < numChunks; chunk++) {
+            final int lo = chunk * RESCAN_CHUNK_SIZE;
+            if (chunk == 0) {
+              cb.println("            if (i < " + (lo + RESCAN_CHUNK_SIZE) + ") {");
+            } else if (chunk == numChunks - 1) {
+              cb.println("            } else {");
+            } else {
+              cb.println("            } else if (i < " + (lo + RESCAN_CHUNK_SIZE) + ") {");
+            }
+            cb.println("              jj_rescan_token_chunk_" + chunk + "(i);");
+          }
+          cb.println("            }");
         }
-        cb.println("              default:");
-        cb.println("                break;");
-        cb.println("            }");
+
         cb.println("          }");
         cb.println("          p = p.next;");
         cb.println("        } while (p != null);");
@@ -1392,6 +1462,27 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
         cb.println("    jj_rescan = false;");
         cb.println("  }");
         cb.println();
+
+        // Generate chunk sub-methods if splitting was needed
+        if (jj2cnt > RESCAN_CHUNK_SIZE) {
+          final int numChunks = (jj2cnt + RESCAN_CHUNK_SIZE - 1) / RESCAN_CHUNK_SIZE;
+          for (int chunk = 0; chunk < numChunks; chunk++) {
+            final int lo = chunk * RESCAN_CHUNK_SIZE;
+            final int hi = Math.min(lo + RESCAN_CHUNK_SIZE, jj2cnt);
+            cb.println("  private " + pStatic + "void jj_rescan_token_chunk_" + chunk + "(final int i) {");
+            cb.println("    switch (i) {");
+            for (int i = lo; i < hi; i++) {
+              cb.println("      case " + i + ":");
+              cb.println("        jj_3_" + (i + 1) + "();");
+              cb.println("        break;");
+            }
+            cb.println("      default:");
+            cb.println("        break;");
+            cb.println("    }");
+            cb.println("  }");
+            cb.println();
+          }
+        }
 
         cb.println("  private " + pStatic + "void jj_save(final int index, final int xla) {");
         cb.println("    JJCalls p = jj_2_rtns[index];");
@@ -1523,6 +1614,18 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
         enumeration.hasMoreElements(); ) {
       buildPhase3Routine(enumeration.nextElement(), false, "");
     }
+
+    // Emit deferred continuation methods for split Choice chains (Fix 3: code-too-large prevention)
+    for (final DeferredChoiceChunk chunk : deferredChoiceChunks) {
+      cb.println("  private " + JavaUtil.getStatic() + "boolean jj_3" + chunk.methodName + "() {");
+      cb.println("    " + getTypeForToken() + " xsp;");
+      emitChoiceChunkFlat(chunk.choice, chunk.lo, chunk.hi,
+          chunk.totalChoices, "", chunk.nextPartName);
+      cb.println("    return LA_Phase3_Success;");
+      cb.println("  }");
+      cb.println();
+    }
+    deferredChoiceChunks.clear();
   }
 
   /*
@@ -2648,63 +2751,73 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
     } else if (e instanceof Choice) {
       final Choice e_nrw = (Choice) e;
       final int nbChoices = e_nrw.getChoices().size();
-      if (nbChoices != 1) {
-        if (!xsp_declared) {
-          xsp_declared = true;
-          cb.println(ind + "    " + getTypeForToken() + " xsp;");
-        }
-        cb.println(ind + "    xsp = jj_scanpos;");
-      }
-      for (int i = 0; i < nbChoices; i++) {
-        String dec = "";
-        for (int k = 0; k < i; k++) {
-          dec += "  ";
-        }
-        final Sequence nested_seq = (Sequence) e_nrw.getChoices().get(i);
-        final Lookahead la = (Lookahead) nested_seq.units.get(0);
-        if (la.getActionTokens().size() != 0) {
-          // We have semantic lookahead that must be evaluated.
-          context.globals().lookaheadNeeded = true;
-          cb.println(dec + ind + "    jj_lookingAhead = true;");
-          cb.print(dec + ind + "    jj_semLA = ");
-          cb.printTokenSetup(la.getActionTokens().get(0));
-          for (final Iterator<Token> it = la.getActionTokens().iterator(); it.hasNext(); ) {
-            t = it.next();
-            cb.printToken(t);
+
+      if (nbChoices > CHOICE_CHAIN_THRESHOLD && !recursive_call) {
+        // Large Choice: split into continuation sub-methods to avoid 64KB bytecode limit.
+        // Each chunk handles up to CHOICE_CHAIN_THRESHOLD alternatives.
+        // The last alternative in each chunk (except the final chunk) delegates
+        // to the next continuation method instead of returning failure.
+        buildPhase3ChoiceSplit(e, e_nrw, nbChoices, inf, ind);
+      } else {
+        // Original behavior for small-to-medium choices
+        if (nbChoices != 1) {
+          if (!xsp_declared) {
+            xsp_declared = true;
+            cb.println(ind + "    " + getTypeForToken() + " xsp;");
           }
-          //          gcb.printTrailingComments(t);
-          cb.println(";");
-          cb.println(dec + ind + "    jj_lookingAhead = false;");
+          cb.println(ind + "    xsp = jj_scanpos;");
         }
-        cb.print(dec + ind + "    if (");
-        if (DCT) {
-          cb.print("/*bp3r-ch1*/ ");
-        }
-        if (la.getActionTokens().size() != 0) {
-          cb.print("!jj_semLA || ");
-        }
-        cb.print(genjj_3Call(nested_seq));
-        cb.println(") {");
-        if (i != (nbChoices - 1)) {
-          cb.println(dec + ind + "      jj_scanpos = xsp;");
-        } else {
-          cb.println(dec + ind + "      " + genReturn(true, i, ind));
-          cb.print(dec + ind + "    }");
+        for (int i = 0; i < nbChoices; i++) {
+          String dec = "";
+          for (int k = 0; k < i; k++) {
+            dec += "  ";
+          }
+          final Sequence nested_seq = (Sequence) e_nrw.getChoices().get(i);
+          final Lookahead la = (Lookahead) nested_seq.units.get(0);
+          if (la.getActionTokens().size() != 0) {
+            // We have semantic lookahead that must be evaluated.
+            context.globals().lookaheadNeeded = true;
+            cb.println(dec + ind + "    jj_lookingAhead = true;");
+            cb.print(dec + ind + "    jj_semLA = ");
+            cb.printTokenSetup(la.getActionTokens().get(0));
+            for (final Iterator<Token> it = la.getActionTokens().iterator(); it.hasNext(); ) {
+              t = it.next();
+              cb.printToken(t);
+            }
+            //          gcb.printTrailingComments(t);
+            cb.println(";");
+            cb.println(dec + ind + "    jj_lookingAhead = false;");
+          }
+          cb.print(dec + ind + "    if (");
           if (DCT) {
-            cb.print(" /*bp3r-ch2*/");
+            cb.print("/*bp3r-ch1*/ ");
+          }
+          if (la.getActionTokens().size() != 0) {
+            cb.print("!jj_semLA || ");
+          }
+          cb.print(genjj_3Call(nested_seq));
+          cb.println(") {");
+          if (i != (nbChoices - 1)) {
+            cb.println(dec + ind + "      jj_scanpos = xsp;");
+          } else {
+            cb.println(dec + ind + "      " + genReturn(true, i, ind));
+            cb.print(dec + ind + "    }");
+            if (DCT) {
+              cb.print(" /*bp3r-ch2*/");
+            }
+            cb.println();
+          }
+        }
+        for (int i = nbChoices; i > 1; i--) {
+          for (int k = i - 1; k > 1; k--) {
+            cb.print("  ");
+          }
+          cb.print(ind + "    }");
+          if (DCT) {
+            cb.print(" /*bp3r-ch3*/");
           }
           cb.println();
         }
-      }
-      for (int i = nbChoices; i > 1; i--) {
-        for (int k = i - 1; k > 1; k--) {
-          cb.print("  ");
-        }
-        cb.print(ind + "    }");
-        if (DCT) {
-          cb.print(" /*bp3r-ch3*/");
-        }
-        cb.println();
       }
 
     } else if (e instanceof Sequence) {
@@ -2819,6 +2932,150 @@ class ParserCodeGenerator implements org.javacc.parser.ParserCodeGenerator {
       }
       cb.println("  }");
       cb.println();
+    }
+  }
+
+  /**
+   * Generates a split Choice chain for phase 3 scanning when the number of alternatives
+   * exceeds {@link #CHOICE_CHAIN_THRESHOLD}.
+   *
+   * <p>Instead of one deeply-nested if-else chain that may exceed 64KB of bytecode,
+   * this generates a flat try-each-and-return pattern split across continuation
+   * sub-methods:</p>
+   * <pre>
+   *   // Main method: tries alternatives 0..999
+   *   Token xsp;
+   *   xsp = jj_scanpos;
+   *   if (!(call(alt0))) return false;  // success
+   *   jj_scanpos = xsp;
+   *   if (!(call(alt1))) return false;
+   *   ...
+   *   jj_scanpos = xsp;
+   *   return jj_3R_Foo_part1();  // delegate to continuation
+   *
+   *   // Continuation method: tries alternatives 1000..1999
+   *   private boolean jj_3R_Foo_part1() { ... }
+   * </pre>
+   */
+  private void buildPhase3ChoiceSplit(final Expansion e, final Choice choice,
+      final int nbChoices, final Phase3Data inf, final String ind) {
+    // Compute the method name base from the expansion's internal name
+    final String baseName = internalNames.get(e);
+    final int numChunks = (nbChoices + CHOICE_CHAIN_THRESHOLD - 1) / CHOICE_CHAIN_THRESHOLD;
+
+    if (!xsp_declared) {
+      xsp_declared = true;
+      cb.println(ind + "    " + getTypeForToken() + " xsp;");
+    }
+
+    // Generate flat alternatives for the first chunk (inside the current method body)
+    emitChoiceChunkFlat(choice, 0, Math.min(CHOICE_CHAIN_THRESHOLD, nbChoices), nbChoices, ind,
+        numChunks > 1 ? baseName + "_part1" : null);
+
+    // Generate continuation sub-methods for remaining chunks
+    for (int chunk = 1; chunk < numChunks; chunk++) {
+      final int lo = chunk * CHOICE_CHAIN_THRESHOLD;
+      final int hi = Math.min(lo + CHOICE_CHAIN_THRESHOLD, nbChoices);
+      final String nextPart = (chunk < numChunks - 1)
+          ? baseName + "_part" + (chunk + 1)
+          : null;
+
+      // These continuation methods are emitted AFTER the enclosing method finishes,
+      // so we buffer them and emit after buildPhase3Routine completes.
+      // We use a simpler approach: emit them as deferred code via the cb directly,
+      // since buildPhase3Routine for non-recursive calls will close the method afterward.
+      deferredChoiceChunks.add(new DeferredChoiceChunk(
+          baseName + "_part" + chunk, choice, lo, hi, nbChoices, nextPart));
+    }
+  }
+
+  /** Buffer for deferred continuation methods generated by choice splitting. */
+  private final List<DeferredChoiceChunk> deferredChoiceChunks = new ArrayList<>();
+
+  /** Data for a deferred continuation method. */
+  private static class DeferredChoiceChunk {
+    final String methodName;
+    final Choice choice;
+    final int lo, hi, totalChoices;
+    final String nextPartName; // null if this is the last chunk
+
+    DeferredChoiceChunk(String methodName, Choice choice,
+        int lo, int hi, int totalChoices, String nextPartName) {
+      this.methodName = methodName;
+      this.choice = choice;
+      this.lo = lo;
+      this.hi = hi;
+      this.totalChoices = totalChoices;
+      this.nextPartName = nextPartName;
+    }
+  }
+
+  /**
+   * Emits a flat sequence of alternatives (no deep nesting) for a Choice chunk.
+   * Each alternative is: if (!(call(alt_i))) return false; jj_scanpos = xsp;
+   * The last alternative either returns failure or delegates to a continuation method.
+   *
+   * @param choice     the Choice expansion
+   * @param lo         first alternative index (inclusive)
+   * @param hi         last alternative index (exclusive)
+   * @param total      total number of alternatives in the full Choice
+   * @param ind        indentation
+   * @param nextMethod name of continuation method, or null for the last chunk
+   */
+  private void emitChoiceChunkFlat(final Choice choice, final int lo, final int hi,
+      final int total, final String ind, final String nextMethod) {
+    Token t = null;
+    cb.println(ind + "    xsp = jj_scanpos;");
+    for (int i = lo; i < hi; i++) {
+      final Sequence nested_seq = (Sequence) choice.getChoices().get(i);
+      final Lookahead la = (Lookahead) nested_seq.units.get(0);
+
+      if (la.getActionTokens().size() != 0) {
+        context.globals().lookaheadNeeded = true;
+        cb.println(ind + "    jj_lookingAhead = true;");
+        cb.print(ind + "    jj_semLA = ");
+        cb.printTokenSetup(la.getActionTokens().get(0));
+        for (final Iterator<Token> it = la.getActionTokens().iterator(); it.hasNext(); ) {
+          t = it.next();
+          cb.printToken(t);
+        }
+        cb.println(";");
+        cb.println(ind + "    jj_lookingAhead = false;");
+      }
+
+      if (i == hi - 1 && nextMethod == null) {
+        // Last alternative of the last chunk: return failure if it fails
+        cb.print(ind + "    if (");
+        if (la.getActionTokens().size() != 0) {
+          cb.print("!jj_semLA || ");
+        }
+        cb.print(genjj_3Call(nested_seq));
+        cb.println(") {");
+        cb.println(ind + "      return LA_Phase3_Failure;");
+        cb.println(ind + "    }");
+      } else if (i == hi - 1 && nextMethod != null) {
+        // Last alternative of a non-final chunk: delegate to continuation
+        cb.print(ind + "    if (");
+        if (la.getActionTokens().size() != 0) {
+          cb.print("!jj_semLA || ");
+        }
+        cb.print(genjj_3Call(nested_seq));
+        cb.println(") {");
+        cb.println(ind + "      jj_scanpos = xsp;");
+        cb.println(ind + "      return jj_3" + nextMethod + "();");
+        cb.println(ind + "    }");
+      } else {
+        // Normal alternative: try it, reset on failure, continue
+        cb.print(ind + "    if (!(");
+        if (la.getActionTokens().size() != 0) {
+          cb.print("!jj_semLA || ");
+        }
+        cb.print(genjj_3Call(nested_seq));
+        cb.println(")) {");
+        cb.println(ind + "      return LA_Phase3_Success;");
+        cb.println(ind + "    }");
+        cb.println(ind + "    jj_scanpos = xsp;");
+      }
     }
   }
 

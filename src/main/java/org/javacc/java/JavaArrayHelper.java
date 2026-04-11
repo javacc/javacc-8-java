@@ -117,6 +117,85 @@ final class JavaArrayHelper {
   }
 
   // ----------------------------------------------------------------
+  // long[]
+  // ----------------------------------------------------------------
+
+  /**
+   * Emits a {@code static final long[]} field backed by init method(s).
+   *
+   * <p>Each {@code long} literal compiles to ~12 bytes of bytecode
+   * ({@code ldc2_w} + {@code lastore}), so the chunk size is halved
+   * compared to {@code int[]} to stay within the 64 KB limit.</p>
+   *
+   * @param jcb    the code builder
+   * @param indent leading whitespace
+   * @param vis    visibility keyword
+   * @param name   field name
+   * @param data   the array data
+   */
+  static void emitLongArray(
+      final JavaCodeBuilder jcb, final String indent,
+      final String vis, final String name, final long[] data) {
+
+    // long literals are larger in bytecode, so use a smaller chunk
+    final int longChunkSize = CHUNK_SIZE / 2;
+
+    jcb.println(indent + vis + " static final long[] " + name + " = " + name + "_init();");
+    jcb.println();
+
+    if (data.length <= longChunkSize) {
+      jcb.println(indent + "private static long[] " + name + "_init() {");
+      jcb.print(indent + "  return new long[] {");
+      jcb.println();
+      for (int i = 0; i < data.length; i++) {
+        if (i % 8 == 0) {
+          if (i > 0) {
+            jcb.println();
+          }
+          jcb.print(indent + "    ");
+        }
+        jcb.print(data[i] + "L");
+        if (i < data.length - 1) {
+          jcb.print(", ");
+        }
+      }
+      jcb.println();
+      jcb.println(indent + "  };");
+      jcb.println(indent + "}");
+    } else {
+      final int chunks = (data.length + longChunkSize - 1) / longChunkSize;
+      jcb.println(indent + "private static long[] " + name + "_init() {");
+      jcb.println(indent + "  final long[] r = new long[" + data.length + "];");
+      for (int c = 0; c < chunks; c++) {
+        jcb.println(indent + "  " + name + "_init_" + c + "(r);");
+      }
+      jcb.println(indent + "  return r;");
+      jcb.println(indent + "}");
+      jcb.println();
+      for (int c = 0; c < chunks; c++) {
+        final int start = c * longChunkSize;
+        final int end = Math.min(start + longChunkSize, data.length);
+        jcb.println(indent + "private static void " + name + "_init_" + c + "(final long[] r) {");
+        for (int i = start; i < end; i++) {
+          if ((i - start) % 8 == 0) {
+            if (i > start) {
+              jcb.println();
+            }
+            jcb.print(indent + "  ");
+          }
+          jcb.print("r[" + i + "]=" + data[i] + "L; ");
+        }
+        jcb.println();
+        jcb.println(indent + "}");
+        if (c < chunks - 1) {
+          jcb.println();
+        }
+      }
+    }
+    jcb.println();
+  }
+
+  // ----------------------------------------------------------------
   // String[]
   // ----------------------------------------------------------------
 
