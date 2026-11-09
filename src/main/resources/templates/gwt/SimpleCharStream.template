@@ -358,32 +358,43 @@ ${SUPPORT_CLASS_VISIBILITY_PUBLIC?public :}class SimpleCharStream {
       len = bufsize - tokenBegin + bufpos + 1 + inBuf;
     }
 
-    int i = 0, j = 0, k = 0;
-    int nextColDiff = 0, columnDiff = 0;
+    // Renumber exactly the len characters of the current token, and nothing
+    // else.  The previous implementation compared each character against its
+    // successor in the buffer, which for a one-character token (what the
+    // JJTree @egen handling adjusts) reads a character that has not been read
+    // yet: its stored line is still 0, the comparison fails, and the fallback
+    // branch then walks one position PAST the token, clobbers it, and finally
+    // takes line/column from there -- silently undoing the adjustment.
+    int idx = start % bufsize;
+    int prevLine = bufline[idx];
+    int prevCol = bufcolumn[idx];
+    int curLine = newLine;
+    int curCol = newCol;
 
-    while (i < len && bufline[j = start % bufsize] == bufline[k = ++start % bufsize]) {
-      bufline[j] = newLine;
-      nextColDiff = columnDiff + bufcolumn[k] - bufcolumn[j];
-      bufcolumn[j] = newCol + columnDiff;
-      columnDiff = nextColDiff;
-      i++;
-    }
+    bufline[idx] = curLine;
+    bufcolumn[idx] = curCol;
 
-    if (i < len) {
-      bufline[j] = newLine++;
-      bufcolumn[j] = newCol + columnDiff;
+    for (int i = 1; i < len; i++) {
+      idx = (start + i) % bufsize;
+      int origLine = bufline[idx];
+      int origCol = bufcolumn[idx];
 
-      while (i++ < len) {
-        if (bufline[j = start % bufsize] != bufline[++start % bufsize]) {
-          bufline[j] = newLine++;
-        } else {
-          bufline[j] = newLine;
-        }
+      if (origLine != prevLine) {
+        // a line break inside the token: columns restart with the original ones
+        curLine++;
+        curCol = origCol;
+      } else {
+        curCol += origCol - prevCol;
       }
+
+      bufline[idx] = curLine;
+      bufcolumn[idx] = curCol;
+      prevLine = origLine;
+      prevCol = origCol;
     }
 
-    line = bufline[j];
-    column = bufcolumn[j];
+    line = curLine;
+    column = curCol;
   }
 
   boolean getTrackLineColumn() {

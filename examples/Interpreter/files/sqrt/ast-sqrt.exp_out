@@ -1,9 +1,0 @@
-Executing: int val
-Executing: read val
-Enter a value for 'val' (int) : 
-Read this value for 'val' (int) : 9
-Executing: int sqrt
-Executing: sqrt = 1 ;
-Executing: while ( sqrt * sqrt <= val && ( ( sqrt + 1 ) * ( sqrt + 1 ) ) <= val ) sqrt = sqrt + 1 ;
-Executing: write sqrt
-Value of sqrt : 3

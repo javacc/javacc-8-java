@@ -1,0 +1,44 @@
+description = 'Java code generator for JavaCC 8. Discovered by core via ServiceLoader.'
+
+base.archivesName = 'javacc-java'
+
+dependencies {
+    // 'api', not 'implementation': anyone invoking the generator needs
+    // org.javacc.parser.Main on the compile/runtime classpath as well.
+    api project(':javacc-8-core')
+
+    testImplementation "junit:junit:${providers.gradleProperty('junitVersion').get()}"
+}
+
+sourceSets {
+    main {
+        // src/main/util holds a stand-alone instrumentation agent used during
+        // generator development only. Upstream never compiles it either.
+        java {
+            srcDirs = ['src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
+tasks.named('jar', Jar) {
+    manifest {
+        attributes('Automatic-Module-Name': 'org.javacc.generator.java')
+    }
+}
+
+// The templates under src/main/resources/templates/** are read verbatim at
+// generation time. Never let a resource filter touch them.
+tasks.named('processResources', ProcessResources) {
+    filteringCharset = 'UTF-8'
+}
+
+publishing.publications.named('maven', MavenPublication) {
+    artifactId = 'javacc-java'
+    pom {
+        name = 'JavaCC 8 Java Code Generator (Manticore fork)'
+        description = project.description
+    }
+}

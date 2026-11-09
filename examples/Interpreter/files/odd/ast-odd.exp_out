@@ -1,9 +1,0 @@
-Executing: int num
-Executing: boolean odd
-Executing: num = 10 ;
-Executing: read num
-Enter a value for 'num' (int) : 
-Read this value for 'num' (int) : 3
-Executing: if ( num % 2 != 0 ) odd = true ; else odd = false ;
-Executing: write odd
-Value of odd : true
