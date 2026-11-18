@@ -205,7 +205,7 @@ class TokenManagerCodeGenerator implements org.javacc.parser.TokenManagerCodeGen
           }
         }
         jcb.print(", " + kind);
-        jcb.print(", " + tokenizerData.kindToNfaStartState.get(kind));
+        jcb.print(", " + tokenizerData.getNfaStartState(key >> 16, kind));
         i += 4;
         j++;
       }
